@@ -22110,7 +22110,7 @@ describe('OrcaRuntimeService', () => {
     expect(harness.resolveLegacyWorkerTerminalRecovery).toHaveBeenCalledWith(
       harness.workerPaneKey,
       'rolled_back',
-      harness.ptyId
+      { ptyId: harness.ptyId }
     )
     expect(harness.resolveLegacyWorkerTerminalRecovery).toHaveBeenCalledWith(
       harness.workerPaneKey,
@@ -22178,7 +22178,7 @@ describe('OrcaRuntimeService', () => {
     expect(harness.resolveLegacyWorkerTerminalRecovery).toHaveBeenCalledWith(
       harness.workerPaneKey,
       'rolled_back',
-      harness.ptyId
+      { ptyId: harness.ptyId }
     )
     expect(harness.resolveLegacyWorkerTerminalRecovery).toHaveBeenCalledWith(
       harness.workerPaneKey,
@@ -22399,7 +22399,7 @@ describe('OrcaRuntimeService', () => {
       expect(resolveLegacyWorkerTerminalRecovery).toHaveBeenCalledWith(
         workerPaneKey,
         'rolled_back',
-        'pty-missing-worker'
+        { ptyId: 'pty-missing-worker' }
       )
       expect(resolveLegacyWorkerTerminalRecovery).toHaveBeenCalledWith(workerPaneKey, 'exited')
     } finally {
@@ -22508,7 +22508,7 @@ describe('OrcaRuntimeService', () => {
       expect(resolveLegacyWorkerTerminalRecovery).toHaveBeenCalledWith(
         workerPaneKey,
         'rolled_back',
-        'pty-missing-retry'
+        { ptyId: 'pty-missing-retry' }
       )
       expect(resolveLegacyWorkerTerminalRecovery).toHaveBeenCalledWith(workerPaneKey, 'exited')
       warn.mockRestore()
