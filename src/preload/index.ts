@@ -4253,6 +4253,8 @@ const api = {
         paneRuntimeId: number
         direction: 'horizontal' | 'vertical'
         command?: string
+        worktreeId?: string
+        sourceLeafId?: string
         telemetrySource?: TerminalPaneSplitSource
         newLeafId?: string
       }) => void
@@ -4264,6 +4266,8 @@ const api = {
           paneRuntimeId: number
           direction: 'horizontal' | 'vertical'
           command?: string
+          worktreeId?: string
+          sourceLeafId?: string
           telemetrySource?: TerminalPaneSplitSource
           newLeafId?: string
         }
