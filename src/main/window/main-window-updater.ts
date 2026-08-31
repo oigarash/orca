@@ -2,6 +2,7 @@ import { app, ipcMain } from 'electron'
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron'
 import type { ReleaseBuildListResult, UpdateCheckOptions } from '../../shared/update-status-types'
 import { RELEASE_CHANNELS, type ReleaseChannel } from '../../shared/release-channel'
+import { LOCAL_UPDATER_NOTIFICATION_ONLY } from '../../shared/local-updater-policy'
 import { isTrustedUIRenderer } from '../ipc/ui'
 import type { Store } from '../persistence'
 import { logStartupMilestone } from '../startup/startup-diagnostics'
@@ -69,7 +70,8 @@ export function scheduleMainWindowAutoUpdaterSetup(
         store.updateUI({ dismissedUpdateNudgeId: id })
       },
       getReleaseChannelOverride: () => store.getUI().releaseChannelOverride ?? null,
-      installMode: options?.updateInstallMode
+      installMode: options?.updateInstallMode,
+      notificationOnly: LOCAL_UPDATER_NOTIFICATION_ONLY
     })
     logStartupMilestone('updater-setup-done')
   }
@@ -97,8 +99,18 @@ export function registerUpdaterHandlers(_store: Store): void {
     ensureAutoUpdaterConfigured()
     return checkForUpdatesFromMenu(options)
   })
-  ipcMain.handle('updater:download', () => downloadUpdate())
-  ipcMain.handle('updater:quitAndInstall', () => quitAndInstall())
+  ipcMain.handle('updater:download', () => {
+    if (LOCAL_UPDATER_NOTIFICATION_ONLY) {
+      return
+    }
+    return downloadUpdate()
+  })
+  ipcMain.handle('updater:quitAndInstall', () => {
+    if (LOCAL_UPDATER_NOTIFICATION_ONLY) {
+      return
+    }
+    return quitAndInstall()
+  })
   ipcMain.handle('updater:dismissNudge', () => dismissNudge())
   ipcMain.handle('updater:dismissAvailableUpdate', () => dismissAvailableUpdate())
   // Why: the response carries a local package path and the reveal touches the native desktop, so

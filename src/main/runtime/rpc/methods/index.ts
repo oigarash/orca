@@ -1,6 +1,5 @@
 import type { RpcAnyMethod } from '../core'
 import { STATUS_METHODS } from './status'
-import { AI_VAULT_METHODS } from './ai-vault'
 import { AUTOMATION_METHODS } from './automations'
 import { REPO_METHODS } from './repo'
 import { WORKTREE_METHODS } from './worktree'
@@ -52,7 +51,6 @@ import { AGENT_HOOK_METHODS } from './agent-hooks'
 export const ALL_RPC_METHODS: readonly RpcAnyMethod[] = [
   ...STATUS_METHODS,
   ...AGENT_HOOK_METHODS,
-  ...AI_VAULT_METHODS,
   ...ARTIFACT_METHODS,
   ...AUTOMATION_METHODS,
   ...REPO_METHODS,
