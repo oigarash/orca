@@ -1,6 +1,3 @@
-import { homedir } from 'node:os'
-import { getRemoteHostPlatform } from '../main/ssh/ssh-remote-platform'
-import { parseUnameToRelayPlatform } from '../main/ssh/relay-protocol'
 import type { RelayDispatcher } from './dispatcher'
 import { RelayContext, expandTilde } from './context'
 import { PtyHandler } from './pty-handler'
@@ -11,8 +8,6 @@ import { ExternalAutomationsHandler } from './external-automations-handler'
 import { PortScanHandler } from './port-scan-handler'
 import { AgentExecHandler } from './agent-exec-handler'
 import { WorkspaceSessionHandler } from './workspace-session-handler'
-import { AiVaultHandler } from './ai-vault-handler'
-import { createRelayAiVaultService } from './ai-vault-service-factory'
 import { registerRelayPluginHostCallHandlers } from './plugin-host-call-handler'
 import { SshPtyConsumerSessionAdapter } from './ssh-pty-consumer-session-adapter'
 import { RelayPtySourcePublication } from './relay-pty-source-publication'
@@ -27,7 +22,6 @@ export class RelayRuntimeServices {
   readonly fsHandler: FsHandler
   readonly gitHandler: GitHandler
   readonly skillInstallHandler: SkillInstallHandler
-  private readonly aiVaultService: ReturnType<typeof createRelayAiVaultService> | null
   private readonly registeredHandlers: readonly unknown[]
 
   constructor(
@@ -64,20 +58,13 @@ export class RelayRuntimeServices {
     const portScanHandler = new PortScanHandler(dispatcher)
     const agentExecHandler = new AgentExecHandler(dispatcher)
     const workspaceSessionHandler = new WorkspaceSessionHandler(dispatcher)
-    const relayPlatform = parseUnameToRelayPlatform(process.platform, process.arch)
-    const hostPlatform = relayPlatform ? getRemoteHostPlatform(relayPlatform) : undefined
-    this.aiVaultService = hostPlatform ? createRelayAiVaultService(homedir(), hostPlatform) : null
     this.registeredHandlers = [
       preflightHandler,
       this.skillInstallHandler,
       externalAutomationsHandler,
       portScanHandler,
       agentExecHandler,
-      workspaceSessionHandler,
-      new AiVaultHandler(dispatcher, {
-        hostPlatform,
-        service: this.aiVaultService ?? undefined
-      })
+      workspaceSessionHandler
     ]
 
     registerRelayPluginHostCallHandlers(
@@ -92,11 +79,6 @@ export class RelayRuntimeServices {
     await this.skillInstallHandler.dispose().catch((error) => {
       relayLogLine(
         `[relay] Skill upload cleanup failed: ${error instanceof Error ? error.message : String(error)}`
-      )
-    })
-    await this.aiVaultService?.dispose().catch((error) => {
-      relayLogLine(
-        `[relay] AI Vault sidecar shutdown failed: ${error instanceof Error ? error.message : String(error)}`
       )
     })
   }

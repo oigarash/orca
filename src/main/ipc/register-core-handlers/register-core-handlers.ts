@@ -1,4 +1,3 @@
-import { app } from 'electron'
 import { registerAppHandlers } from '../app'
 import { registerCliHandlers } from '../cli'
 import { registerPreflightHandlers } from '../preflight'
@@ -24,7 +23,6 @@ import { registerRateLimitHandlers } from '../rate-limits'
 import { registerRuntimeHandlers } from '../runtime'
 import { registerRuntimeEnvironmentHandlers } from '../runtime-environments'
 import { registerEphemeralVmHandlers } from '../ephemeral-vm'
-import { registerAiVaultHandlers } from '../ai-vault'
 import { registerNativeChatHandlers } from '../native-chat'
 import { registerNotificationHandlers } from '../notifications'
 import { registerNotebookHandlers } from '../notebook'
@@ -83,12 +81,6 @@ import type {
   AiVaultPrepareSessionResumeArgs,
   AiVaultPrepareSessionResumeResult
 } from '../../../shared/ai-vault-resume-preparation'
-import {
-  getSavedRuntimeAiVaultHostInfos,
-  prepareRuntimeAiVaultSessionResume,
-  resolveRuntimeAiVaultSessionTitles,
-  scanRuntimeAiVaultSessions
-} from '../../ai-vault/runtime-session-scanner'
 import type { PluginService } from '../../plugins/plugin-service'
 import type { PluginMarketplaceHandlerServices } from '../plugin-marketplaces'
 
@@ -214,18 +206,6 @@ export function registerCoreHandlers(
   registerRuntimeHandlers(runtime)
   registerRuntimeEnvironmentHandlers(store)
   registerEphemeralVmHandlers(store, pluginService)
-  registerAiVaultHandlers({
-    getAdditionalCodexHomePaths: lifecycleOptions.getAdditionalAiVaultCodexHomePaths,
-    prepareSessionResume: lifecycleOptions.prepareAiVaultSessionResume,
-    getActiveRuntimeAiVaultHostInfos: () =>
-      getSavedRuntimeAiVaultHostInfos(app.getPath('userData')),
-    scanRuntimeAiVaultSessions: async (environmentId, args, options) =>
-      scanRuntimeAiVaultSessions(app.getPath('userData'), environmentId, args, options),
-    resolveRuntimeAiVaultSessionTitles: async (environmentId, args) =>
-      resolveRuntimeAiVaultSessionTitles(app.getPath('userData'), environmentId, args),
-    prepareRuntimeSessionResume: async (environmentId, args) =>
-      prepareRuntimeAiVaultSessionResume(app.getPath('userData'), environmentId, args)
-  })
   registerNativeChatHandlers()
   registerClipboardHandlers(store)
   registerUpdaterHandlers(store)

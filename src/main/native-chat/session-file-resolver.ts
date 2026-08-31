@@ -6,9 +6,8 @@ import {
   type NativeChatTranscriptAgent
 } from '../../shared/native-chat-agent-support'
 import { isWslUncPath } from '../../shared/wsl-paths'
-import { walkSessionFiles } from '../ai-vault/session-scanner-discovery'
-import { OMP_SESSION_ARTIFACT_DIR_PATTERN } from '../ai-vault/session-scanner-omp-subagent-transcripts'
-import { normalizeAgentSessionsDir } from '../ai-vault/session-scanner-values'
+import { walkSessionFiles } from './session-file-walker'
+import { normalizeAgentSessionsDir } from './transcript-value-parsing'
 import { resolveOrcaManagedCodexHomePath } from '../codex/codex-home-paths'
 import {
   findGrokChatHistoryBySessionId,
@@ -17,6 +16,9 @@ import {
 import { toHostReadableTranscriptPath, wslCodexSessionsDirs } from './host-readable-transcript-path'
 import { findWslCodexSessionPath } from './wsl-codex-session-path-scan'
 import { wslTranscriptFsRefusal, type WslTranscriptFsError } from './wsl-transcript-fs-gate'
+
+const OMP_SESSION_ARTIFACT_DIR_PATTERN =
+  /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 // Why: these mirror the path constants in ai-vault/session-scanner.ts. Reads
 // run in the main process against the runtime's own home directory; over SSH

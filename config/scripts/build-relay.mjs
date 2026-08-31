@@ -34,14 +34,6 @@ const __dirname = import.meta.dirname
 const ROOT = join(__dirname, '..', '..')
 const RELAY_ENTRY = join(ROOT, 'src', 'relay', 'relay.ts')
 const WATCHER_ENTRY = join(ROOT, 'src', 'main', 'ipc', 'parcel-watcher-process-entry.ts')
-const AI_VAULT_SERVICE_ENTRY = join(ROOT, 'src', 'relay', 'ai-vault-service-entry.ts')
-const WSL_TRANSCRIPT_FS_PROCESS_ENTRY = join(
-  ROOT,
-  'src',
-  'main',
-  'native-chat',
-  'wsl-transcript-fs-process-entry.ts'
-)
 const MANAGED_HOOK_RUNTIME_ENTRY = join(
   ROOT,
   'src',
@@ -136,38 +128,6 @@ for (const platform of RELAY_BUILD_PLATFORMS) {
     format: 'cjs',
     outfile: join(outDir, 'relay-watcher.js'),
     external: ['@parcel/watcher'],
-    sourcemap: false,
-    minify: true,
-    define: {
-      'process.env.NODE_ENV': '"production"'
-    }
-  })
-
-  await build({
-    entryPoints: [AI_VAULT_SERVICE_ENTRY],
-    bundle: true,
-    platform: 'node',
-    target: 'node18',
-    format: 'cjs',
-    outfile: join(outDir, 'relay-ai-vault-service.js'),
-    external: ['electron'],
-    sourcemap: false,
-    minify: true,
-    define: {
-      'process.env.NODE_ENV': '"production"'
-    }
-  })
-
-  // Why beside the service: the spawn resolves this child next to its own
-  // bundle, and a relay host has no desktop out/main to fall back to.
-  await build({
-    entryPoints: [WSL_TRANSCRIPT_FS_PROCESS_ENTRY],
-    bundle: true,
-    platform: 'node',
-    target: 'node18',
-    format: 'cjs',
-    outfile: join(outDir, 'wsl-transcript-fs-process-entry.js'),
-    external: ['electron'],
     sourcemap: false,
     minify: true,
     define: {

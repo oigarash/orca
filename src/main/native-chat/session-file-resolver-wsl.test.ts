@@ -37,7 +37,7 @@ vi.mock('node:fs/promises', async (importOriginal) => {
 
 const HOST_ROLLOUT = 'C:\\host\\sessions\\rollout-wsl-sess.jsonl'
 const scanned = vi.hoisted(() => ({ dirs: [] as string[], hostRootHasRollout: false }))
-vi.mock('../ai-vault/session-scanner-discovery', () => ({
+vi.mock('./session-file-walker', () => ({
   walkSessionFiles: async (dir: string) => {
     scanned.dirs.push(dir)
     const isWslRoot = dir.startsWith('\\\\wsl.localhost\\')

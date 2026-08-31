@@ -37,7 +37,6 @@ import { setWorktreeWatcherRemoval } from './ipc/worktree-watcher-removal'
 import { setSecretStore } from '../shared/secret-store'
 import { ElectronSecretStore } from './host/electron-secret-store'
 import { scheduleSecretProtectionGapReport } from './host/deferred-secret-protection-report'
-import { initSessionParseCachePersistence } from './ai-vault/session-parse-cache-persistence'
 import { ensureActiveOrcaProfile, initOrcaProfilePaths } from './orca-profiles/profile-index-store'
 import { getOrcaCloudAuthConfig } from './orca-profiles/profile-cloud-auth-config'
 import { getProfileUserDataPath } from './orca-profiles/profile-storage-paths'
@@ -277,7 +276,6 @@ import {
   stopCodexStateDbBackfillRecoveries
 } from './codex/codex-state-db-backfill-recovery'
 import { createCodexSessionMigrationScheduler } from './codex/codex-session-migration-scheduler'
-import { prepareCodexAiVaultSessionResume } from './codex/codex-ai-vault-session-resume'
 import { prepareLegacySharedCodexSessionResume } from './codex/codex-legacy-session-resume'
 import { ManagedCodexHomeTemporarilyUnavailableError } from './codex-accounts/host-codex-managed-home-ownership'
 import { resolveHostCodexSessionSourceHome } from './codex/codex-session-source-home'
@@ -947,11 +945,6 @@ if (hasSingleInstanceLock) {
   // Why here: initDataPath above gives the canonical userData path for the record file; the write
   // itself lands for the next launch (see macos-press-and-hold-default.ts).
   applyMacPressAndHoldDefaultAtStartup(getCanonicalUserDataPath())
-  // Why: use the canonical userData path — late app.getPath('userData') can resolve differently across restarts, defeating persistence.
-  initSessionParseCachePersistence({
-    filePath: join(getCanonicalUserDataPath(), 'ai-vault', 'session-parse-cache.json'),
-    appVersion: app.getVersion()
-  })
   initOrcaProfilePaths()
   // Why: same timing as initDataPath — capture userData before app.setName changes it. See persistence.ts:20-28.
   initStatsPath()
@@ -1607,13 +1600,6 @@ function openMainWindow(options: { revealOnDidFinishLoad?: boolean } = {}): Brow
     crashReports ?? undefined,
     keybindings,
     {
-      getAdditionalAiVaultCodexHomePaths: () =>
-        codexRuntimeHome ? codexRuntimeHome.getHostCodexHomePathsForSessionDiscovery() : [],
-      prepareAiVaultSessionResume: (args) =>
-        prepareCodexAiVaultSessionResume(args, {
-          runtimeHome: codexRuntimeHome,
-          systemCodexHomePath: resolveHostCodexSessionSourceHome(store!.getSettings())
-        }),
       onBeforeRelaunch: async () => {
         isQuitting = true
         desktopRelayService?.fenceAndCloseNow()
@@ -2782,14 +2768,9 @@ void app.whenReady().then(async () => {
     // constructed with this runtime and does not exist yet at this point.
     getPairedDeviceName: (pairedDeviceId) =>
       runtimeRpc?.getDeviceRegistry()?.getDevice(pairedDeviceId)?.name ?? null,
-    // Why: source codex-home here (runs in window AND serve) so aiVault.listSessions includes managed-Codex sessions; registerCoreHandlers is window-only.
-    getAdditionalAiVaultCodexHomePaths: () =>
+    // Native Chat resolves transcripts on both window and headless serve hosts.
+    getAdditionalCodexHomePaths: () =>
       codexRuntimeHome ? codexRuntimeHome.getHostCodexHomePathsForSessionDiscovery() : [],
-    prepareAiVaultSessionResume: (args) =>
-      prepareCodexAiVaultSessionResume(args, {
-        runtimeHome: codexRuntimeHome,
-        systemCodexHomePath: resolveHostCodexSessionSourceHome(store!.getSettings())
-      }),
     buildAgentHookPtyEnv: () =>
       isAgentStatusHooksEnabled(store?.getSettings()) ? agentHookServer.buildPtyEnv() : {},
     orchestrationEnvironmentTransport,

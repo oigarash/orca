@@ -243,13 +243,13 @@ describe('Electron runtime package contract', () => {
 
     expect(relayBuild).toContain("'parcel-watcher-process-entry.ts'")
     expect(relayBuild).toContain("outfile: join(outDir, 'relay-watcher.js')")
-    expect(relayBuild).toContain("outfile: join(outDir, 'relay-ai-vault-service.js')")
+    expect(relayBuild).not.toContain("outfile: join(outDir, 'relay-ai-vault-service.js')")
     expect(builderConfig).toContain("from: 'out/relay'")
 
     // Hashing and remote install probing are manifest-driven, so the contract
-    // is that both companions are declared once and that both sites read it.
+    // is that the remaining companion is declared once and both sites read it.
     expect(relayArtifactFilenames(true)).toContain('relay-watcher.js')
-    expect(relayArtifactFilenames(true)).toContain('relay-ai-vault-service.js')
+    expect(relayArtifactFilenames(true)).not.toContain('relay-ai-vault-service.js')
     expect(relayBuild).toContain('relayArtifactFilenames(')
     expect(remoteCommands).toContain('relayArtifactFilenames(')
 

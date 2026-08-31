@@ -16,6 +16,7 @@ import { UpdateDownloadingContent, UpdateReadyToInstallContent } from './UpdateD
 
 export function UpdateCardStateContent({
   status,
+  notificationOnly,
   changelog,
   errorCard,
   linuxPackageRecovery,
@@ -33,6 +34,7 @@ export function UpdateCardStateContent({
   onCollapse
 }: {
   status: UpdateStatus
+  notificationOnly: boolean
   changelog: ChangelogData | null
   errorCard: UpdateErrorCardModel | null
   linuxPackageRecovery: {
@@ -81,6 +83,17 @@ export function UpdateCardStateContent({
   if (errorCard) {
     return <UpdateErrorCardContent {...errorCard} onClose={onCollapse} />
   }
+  if (notificationOnly && (status.state === 'downloading' || status.state === 'downloaded')) {
+    return (
+      <UpdateAvailableSimpleContent
+        version={status.version}
+        releaseUrl={isLocalBuild ? undefined : getReleaseNotesUrlForVersion(status.version)}
+        notificationOnly
+        onUpdate={onUpdate}
+        onClose={onDismiss}
+      />
+    )
+  }
   if (status.state === 'downloaded') {
     return hasStartedDownload ? (
       <div className="p-4">
@@ -127,6 +140,7 @@ export function UpdateCardStateContent({
       mediaLoaded={mediaLoaded}
       onMediaError={onMediaError}
       onMediaLoad={onMediaLoad}
+      notificationOnly={notificationOnly}
       onUpdate={onUpdate}
       onClose={onDismiss}
     />
@@ -134,6 +148,7 @@ export function UpdateCardStateContent({
     <UpdateAvailableSimpleContent
       version={status.version}
       releaseUrl={releaseUrl}
+      notificationOnly={notificationOnly}
       onUpdate={onUpdate}
       onClose={onDismiss}
     />

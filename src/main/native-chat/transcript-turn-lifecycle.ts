@@ -1,12 +1,7 @@
 import type { AgentType, NativeChatTurnLifecycle } from '../../shared/native-chat-types'
 import { resolveNativeChatTranscriptAgent } from '../../shared/native-chat-agent-support'
 import { isNoiseMessage } from '../../shared/native-chat-noise'
-import {
-  asRecord,
-  extractString,
-  parseJsonObject,
-  timestampMs
-} from '../ai-vault/session-scanner-values'
+import { asRecord, extractString, parseJsonObject, timestampMs } from './transcript-value-parsing'
 import { decodeClaudeTranscriptLine } from './transcript-line-decoders-claude'
 import {
   claudeInterruptedMessageId,

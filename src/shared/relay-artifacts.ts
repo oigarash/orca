@@ -45,11 +45,7 @@ export const RELAY_WINDOWS_PROCESS_TREE_FILENAME = 'windows-process-tree.node'
 export const RELAY_ARTIFACTS: readonly RelayArtifact[] = [
   { filename: 'relay.js' },
   { filename: 'relay-watcher.js' },
-  { filename: 'relay-ai-vault-service.js' },
   { filename: 'managed-hook-runtime.js' },
-  // Forked by the AI Vault title reader; without it a relay answers every WSL
-  // title request with no title and no error.
-  { filename: 'wsl-transcript-fs-process-entry.js' },
   { filename: 'node-pty-1.1.0-console-list-agent-patch.cjs', windowsOnly: true },
   // Optional because only a Windows build machine can compile it. Without it the
   // relay reads the process table through a PowerShell scan instead -- slower,
