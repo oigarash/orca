@@ -313,10 +313,9 @@ describe('attachMainWindowServices', () => {
     expect(setupAutoUpdaterMock).not.toHaveBeenCalled()
     await fireReadyToShow(mainWindow)
     expect(setupAutoUpdaterMock).toHaveBeenCalledTimes(1)
-    expect(setupAutoUpdaterMock).toHaveBeenCalledWith(
-      mainWindow,
-      expect.objectContaining({ installMode: 'supervised-headless-serve' })
-    )
+    const updaterOptions = setupAutoUpdaterMock.mock.calls[0][1]
+    expect(updaterOptions.installMode).toBe('supervised-headless-serve')
+    expect(updaterOptions.notificationOnly).toBe(true)
     await setupAutoUpdaterMock.mock.calls[0][1].onBeforeQuit()
 
     expect(onBeforeUpdateQuit).toHaveBeenCalledTimes(1)

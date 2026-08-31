@@ -70,6 +70,7 @@ import { startFolderRepoGitUpgradeWatch } from '../ipc/folder-repo-git-upgrade'
 import { logStartupMilestone } from '../startup/startup-diagnostics'
 import { createRuntimeRendererNotificationSender } from './runtime-renderer-notification-sender'
 import { registerRendererDocumentNavigation } from './renderer-document-navigation'
+import { LOCAL_UPDATER_NOTIFICATION_ONLY } from '../../shared/local-updater-policy'
 
 const UPDATER_SETUP_FALLBACK_MS = 15_000
 
@@ -196,7 +197,8 @@ export function attachMainWindowServices(
         store.updateUI({ dismissedUpdateNudgeId: id })
       },
       getReleaseChannelOverride: () => store.getUI().releaseChannelOverride ?? null,
-      installMode: options?.updateInstallMode
+      installMode: options?.updateInstallMode,
+      notificationOnly: LOCAL_UPDATER_NOTIFICATION_ONLY
     })
     logStartupMilestone('updater-setup-done')
   }
@@ -582,8 +584,18 @@ export function registerUpdaterHandlers(_store: Store): void {
     ensureAutoUpdaterConfigured()
     return checkForUpdatesFromMenu(options)
   })
-  ipcMain.handle('updater:download', () => downloadUpdate())
-  ipcMain.handle('updater:quitAndInstall', () => quitAndInstall())
+  ipcMain.handle('updater:download', () => {
+    if (LOCAL_UPDATER_NOTIFICATION_ONLY) {
+      return
+    }
+    return downloadUpdate()
+  })
+  ipcMain.handle('updater:quitAndInstall', () => {
+    if (LOCAL_UPDATER_NOTIFICATION_ONLY) {
+      return
+    }
+    return quitAndInstall()
+  })
   ipcMain.handle('updater:dismissNudge', () => dismissNudge())
   ipcMain.handle('updater:dismissAvailableUpdate', () => dismissAvailableUpdate())
   // Why: the response carries a local package path and the reveal touches the native desktop, so

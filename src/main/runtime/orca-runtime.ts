@@ -719,12 +719,7 @@ import {
   TERMINAL_PAIRED_PARKING_RUNTIME_CAPABILITY,
   type RuntimeCapability
 } from '../../shared/protocol-version'
-import {
-  configureAiVaultSessionSources,
-  listAiVaultSessions
-} from '../ai-vault/cached-session-list'
 import { configureHostReadableTranscriptPathSources } from '../native-chat/host-readable-transcript-path'
-import { resolveLocalAiVaultSessionTitles } from '../ai-vault/session-title-resolver'
 import type { AiVaultListArgs, AiVaultListResult } from '../../shared/ai-vault-types'
 import type {
   AiVaultSessionTitleRequest,
@@ -3957,10 +3952,7 @@ export class OrcaRuntimeService {
       // Why: the device registry lives on the RPC server, which is constructed with this runtime;
       // a closure defers the lookup past that ordering instead of inverting ownership.
       getPairedDeviceName?: (pairedDeviceId: string) => string | null
-      // Why: codex-home paths for the Agent Session History scan must be sourced
-      // here, not via the window-only registerCoreHandlers path — that path never
-      // runs under `orca serve`, so remote/SSH hosts would silently drop
-      // managed-Codex sessions. The runtime ctor runs in BOTH window and serve.
+      getAdditionalCodexHomePaths?: () => readonly string[]
       getAdditionalAiVaultCodexHomePaths?: () => readonly string[]
       prepareAiVaultSessionResume?: (
         args: AiVaultPrepareSessionResumeArgs
@@ -4005,15 +3997,11 @@ export class OrcaRuntimeService {
     this.reconcileAgentStatusForEndedProcessFn = deps?.reconcileAgentStatusForEndedProcess ?? null
     this.canRecoverPersistentLocalPtysFn = deps?.canRecoverPersistentLocalPtys ?? (() => true)
     this.getPairedDeviceNameFn = deps?.getPairedDeviceName ?? (() => null)
-    // Why: configure the shared AiVault scan cache from a serve-mode-reachable
-    // seam so the aiVault.listSessions RPC includes managed-Codex + WSL sessions
-    // even on headless `orca serve` hosts where registerCoreHandlers never runs.
-    if (deps?.getAdditionalAiVaultCodexHomePaths) {
-      configureAiVaultSessionSources({
-        getAdditionalCodexHomePaths: deps.getAdditionalAiVaultCodexHomePaths
-      })
+    const getAdditionalCodexHomePaths =
+      deps?.getAdditionalCodexHomePaths ?? deps?.getAdditionalAiVaultCodexHomePaths
+    if (getAdditionalCodexHomePaths) {
       configureHostReadableTranscriptPathSources({
-        getAdditionalCodexHomePaths: deps.getAdditionalAiVaultCodexHomePaths
+        getAdditionalCodexHomePaths
       })
     }
     // Why: the daemon adapter is installed via `setLocalPtyProvider()` during
@@ -6615,18 +6603,15 @@ export class OrcaRuntimeService {
     }
   }
 
-  // Why: scans the transcript-owning host's disk (correct by construction over
-  // RPC — a remote/SSH host scans its own disk). Delegates to the one shared
-  // cache so the desktop panel and the mobile screen never double-scan.
-  listAiVaultSessions(args?: AiVaultListArgs): Promise<AiVaultListResult> {
-    return listAiVaultSessions(args)
+  listAiVaultSessions(_args?: AiVaultListArgs): Promise<AiVaultListResult> {
+    return Promise.resolve({ sessions: [], issues: [], scannedAt: new Date().toISOString() })
   }
 
   resolveAiVaultSessionTitles(
-    requests: AiVaultSessionTitleRequest[],
-    signal?: AbortSignal
+    _requests: AiVaultSessionTitleRequest[],
+    _signal?: AbortSignal
   ): Promise<AiVaultSessionTitlesResult> {
-    return resolveLocalAiVaultSessionTitles(requests, signal)
+    return Promise.resolve({ titles: [] })
   }
 
   prepareAiVaultSessionResume(

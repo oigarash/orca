@@ -15,6 +15,7 @@ export function UpdateAvailableRichContent({
   mediaLoaded,
   onMediaError,
   onMediaLoad,
+  notificationOnly,
   onUpdate,
   onClose
 }: {
@@ -25,6 +26,7 @@ export function UpdateAvailableRichContent({
   mediaLoaded: boolean
   onMediaError: () => void
   onMediaLoad: () => void
+  notificationOnly: boolean
   onUpdate: () => void
   onClose: () => void
 }): React.JSX.Element {
@@ -87,9 +89,18 @@ export function UpdateAvailableRichContent({
       >
         {translate('auto.components.UpdateCard.aad383aecc', 'Read the full release notes')}
       </button>
-      <Button variant="default" size="sm" onClick={onUpdate} className="w-full cursor-pointer">
-        {translate('auto.components.UpdateCard.ec8fe71cfc', 'Update')}
-      </Button>
+      {notificationOnly ? (
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          {translate(
+            'custom.components.UpdateCard.notificationOnly',
+            'This custom build only notifies you. Automatic download and installation are disabled.'
+          )}
+        </p>
+      ) : (
+        <Button variant="default" size="sm" onClick={onUpdate} className="w-full cursor-pointer">
+          {translate('auto.components.UpdateCard.ec8fe71cfc', 'Update')}
+        </Button>
+      )}
     </div>
   )
 }
@@ -97,11 +108,13 @@ export function UpdateAvailableRichContent({
 export function UpdateAvailableSimpleContent({
   version,
   releaseUrl,
+  notificationOnly,
   onUpdate,
   onClose
 }: {
   version: string
   releaseUrl?: string
+  notificationOnly: boolean
   onUpdate: () => void
   onClose: () => void
 }): React.JSX.Element {
@@ -138,14 +151,23 @@ export function UpdateAvailableSimpleContent({
           {translate('auto.components.UpdateCard.44324ef542', 'Release notes')}
         </button>
       )}
-      <Button
-        variant="default"
-        size="sm"
-        onClick={onUpdate}
-        className="mt-0.5 w-full cursor-pointer"
-      >
-        {translate('auto.components.UpdateCard.ec8fe71cfc', 'Update')}
-      </Button>
+      {notificationOnly ? (
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          {translate(
+            'custom.components.UpdateCard.notificationOnly',
+            'This custom build only notifies you. Automatic download and installation are disabled.'
+          )}
+        </p>
+      ) : (
+        <Button
+          variant="default"
+          size="sm"
+          onClick={onUpdate}
+          className="mt-0.5 w-full cursor-pointer"
+        >
+          {translate('auto.components.UpdateCard.ec8fe71cfc', 'Update')}
+        </Button>
+      )}
     </div>
   )
 }

@@ -4,7 +4,7 @@ import type {
   NativeChatTurnLifecycle
 } from '../../shared/native-chat-types'
 import { resolveNativeChatTranscriptAgent } from '../../shared/native-chat-agent-support'
-import { errorMessage } from '../ai-vault/session-scanner-values'
+import { errorMessage } from './transcript-value-parsing'
 import { resolveSessionFilePath, type ResolveSessionFileOptions } from './session-file-resolver'
 import { openTranscriptReadStream } from './wsl-transcript-fs-access'
 import { wslTranscriptFsRefusal } from './wsl-transcript-fs-gate'
