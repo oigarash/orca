@@ -26,7 +26,7 @@ vi.mock('./wsl-transcript-fs-gate', async (importOriginal) => ({
   ...(await importOriginal<typeof WslTranscriptFsGateModule>()),
   runWslTranscriptFsTask: mocks.gate
 }))
-vi.mock('../ai-vault/session-scanner-discovery', () => ({
+vi.mock('./session-file-walker', () => ({
   walkSessionFiles: mocks.walk
 }))
 vi.mock('../wsl', () => ({

@@ -84,6 +84,7 @@ import {
   type ReleaseBuild,
   type ReleaseChannel
 } from '../shared/release-channel'
+import { shouldAllowUpdaterInstallation } from '../shared/local-updater-policy'
 
 type CheckFailureSource = 'event' | 'promise' | 'fallback-promise'
 type MissingManifestPrereleaseFallbackResult = { userInitiated: boolean }
@@ -2172,6 +2173,7 @@ export function setupAutoUpdater(
     setDismissedUpdateNudgeId?: (id: string | null) => void
     getReleaseChannelOverride?: () => ReleaseChannel | null
     installMode?: UpdateInstallMode
+    notificationOnly?: boolean
   }
 ): void {
   mainWindowRef = mainWindow
@@ -2204,6 +2206,10 @@ export function setupAutoUpdater(
   }
 
   const autoUpdater = getAutoUpdater()
+  const allowInstallation = shouldAllowUpdaterInstallation(
+    opts?.notificationOnly === true,
+    updateInstallMode
+  )
   autoUpdater.autoDownload = false
   if (activeUpdateSource === 'release') {
     autoUpdater.allowDowngrade = false
@@ -2212,9 +2218,9 @@ export function setupAutoUpdater(
   // Why: supervised serve installs require an explicit handoff; ordinary service quits must never install implicitly.
   // Root Linux packages also opt out: an implicit quit-time escalation would fail after the UI is gone, leaving no recovery surface.
   autoUpdater.autoInstallOnAppQuit =
-    updateInstallMode === 'interactive' && getLinuxRootPackageType() === null
+    allowInstallation && updateInstallMode === 'interactive' && getLinuxRootPackageType() === null
   // Why: MacUpdater ignores quitAndInstall arguments; the surviving CLI supervisor must be the only serve relaunch owner.
-  autoUpdater.autoRunAppAfterInstall = updateInstallMode === 'interactive'
+  autoUpdater.autoRunAppAfterInstall = allowInstallation && updateInstallMode === 'interactive'
 
   // Why: our only on-machine window into electron-updater; otherwise an unexpected update-not-available or failed fetch is invisible.
   // The adapter also retains the redacted child stderr that BaseUpdater logs but drops from the 'error' event.

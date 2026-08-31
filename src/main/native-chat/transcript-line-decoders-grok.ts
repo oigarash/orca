@@ -1,12 +1,7 @@
 // Grok chat_history.jsonl line → NativeChatMessage decoder.
 
 import type { NativeChatBlock, NativeChatMessage } from '../../shared/native-chat-types'
-import {
-  asRecord,
-  extractString,
-  parseJsonObject,
-  timestampMs
-} from '../ai-vault/session-scanner-values'
+import { asRecord, extractString, parseJsonObject, timestampMs } from './transcript-value-parsing'
 import { claudeContentBlocks, toolResultOutput } from './transcript-record-blocks'
 
 /**

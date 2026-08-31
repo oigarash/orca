@@ -209,8 +209,8 @@ describe('worker thread entry guard', () => {
   it('follows shared chunks out of a worker entry', () => {
     const plugin = createPlainNodeEntryGuardPlugin()
     const bundle = {
-      'session-scanner-opencode-sqlite-worker-entry.js': workerChunk(
-        'session-scanner-opencode-sqlite-worker-entry',
+      'port-scan-command-worker-entry.js': workerChunk(
+        'port-scan-command-worker-entry',
         'require("./chunks/shared.js")',
         ['chunks/shared.js']
       ),
