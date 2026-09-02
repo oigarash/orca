@@ -131,6 +131,9 @@ describe('per-job path classification', () => {
     expectClassification(['native/windows-cli-launcher/OrcaCliLauncher.cs'], {
       package_windows: true
     })
+    expectClassification(['native/input-method-windows/OrcaInputMethodState.cs'], {
+      package_windows: true
+    })
     expectClassification(['native/computer-use-linux/runtime.py'], {
       package: true
     })

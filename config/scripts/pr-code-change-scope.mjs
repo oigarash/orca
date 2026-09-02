@@ -168,9 +168,11 @@ const LINUX_PACKAGE_PREFIXES = [
 
 const WINDOWS_PACKAGE_PREFIXES = [
   ...SHARED_PACKAGE_PREFIXES,
+  'native/input-method-windows/',
   'native/windows-cli-launcher/',
   'native/computer-use-windows/',
   'resources/win32/',
+  'config/scripts/build-windows-input-method-state',
   'config/scripts/build-windows-cli-launcher',
   'config/scripts/windows-pty-native-capability',
   'tests/tools/windows-pty-native-capability-smoke/'

@@ -350,6 +350,10 @@ module.exports = {
         to: 'bin/orca.exe'
       },
       {
+        from: 'native/input-method-windows/.build/orca-input-method-state.exe',
+        to: 'input-method/orca-input-method-state.exe'
+      },
+      {
         from: 'node_modules/agent-browser/bin/agent-browser-win32-x64.exe',
         to: 'agent-browser-win32-x64.exe'
       },

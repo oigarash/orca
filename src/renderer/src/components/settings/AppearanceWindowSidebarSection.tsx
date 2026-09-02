@@ -16,6 +16,7 @@ import { useAvailableStatusBarToggles } from '../status-bar/use-available-status
 import {
   getLayoutEntries,
   getSidebarEntries,
+  getInputMethodStatusBarToggle,
   getStatusBarToggles,
   getUsagePercentageDisplayEntry
 } from './appearance-search'
@@ -32,6 +33,7 @@ import { matchesSettingsSearch, normalizeSettingsSearchQuery } from './settings-
 type AppearanceWindowSidebarSectionProps = {
   settings: GlobalSettings
   updateSettings: (updates: Partial<GlobalSettings>) => void
+  showInputMethodStatus: boolean
   forceVisiblePrimary?: boolean
 }
 
@@ -62,18 +64,22 @@ function recordStatusBarToggleInteraction(
 export function AppearanceWindowSidebarSection({
   settings,
   updateSettings,
+  showInputMethodStatus,
   forceVisiblePrimary = false
 }: AppearanceWindowSidebarSectionProps): React.JSX.Element {
   const searchQuery = useAppStore((state) => state.settingsSearchQuery)
   const isSearching = normalizeSettingsSearchQuery(searchQuery).length > 0
   const statusBarItems = useAppStore((state) => state.statusBarItems)
   const toggleStatusBarItem = useAppStore((state) => state.toggleStatusBarItem)
+  const inputMethodStatusVisible = useAppStore((state) => state.inputMethodStatusVisible)
+  const setInputMethodStatusVisible = useAppStore((state) => state.setInputMethodStatusVisible)
   const usagePercentageDisplay = useAppStore((state) => state.usagePercentageDisplay)
   const setUsagePercentageDisplay = useAppStore((state) => state.setUsagePercentageDisplay)
   const recordFeatureInteraction = useAppStore((state) => state.recordFeatureInteraction)
   const setWorktreeCardMode = useAppStore((state) => state.setWorktreeCardMode)
   const visibleStatusBarToggles = useAvailableStatusBarToggles(getStatusBarToggles())
   const usagePercentageDisplayEntry = getUsagePercentageDisplayEntry()
+  const inputMethodStatusEntry = getInputMethodStatusBarToggle()
   const leftSidebarAppearanceEntry = getLeftSidebarAppearanceEntry()
   const sidebarEntries = getSidebarEntries()
   const workspaceCardLayoutEntry = getWorkspaceCardLayoutEntry()
@@ -94,6 +100,7 @@ export function AppearanceWindowSidebarSection({
   })
   const statusBarControlMatches =
     matchesSettingsSearch(searchQuery, usagePercentageDisplayEntry) ||
+    (showInputMethodStatus && matchesSettingsSearch(searchQuery, inputMethodStatusEntry)) ||
     visibleStatusBarToggles.some((toggle) =>
       matchesSettingsSearch(searchQuery, {
         title: toggle.title,
@@ -166,6 +173,22 @@ export function AppearanceWindowSidebarSection({
                   }
                 />
               </SearchableSetting>
+
+              {showInputMethodStatus ? (
+                <SearchableSetting
+                  title={inputMethodStatusEntry.title}
+                  description={inputMethodStatusEntry.description}
+                  keywords={inputMethodStatusEntry.keywords}
+                >
+                  <SettingsSwitchRow
+                    label={inputMethodStatusEntry.title}
+                    description={inputMethodStatusEntry.toggleDescription}
+                    checked={inputMethodStatusVisible}
+                    onChange={() => setInputMethodStatusVisible(!inputMethodStatusVisible)}
+                    ariaLabel={inputMethodStatusEntry.title}
+                  />
+                </SearchableSetting>
+              ) : null}
 
               {visibleStatusBarToggles.map((toggle) => {
                 const enabled = statusBarItems.includes(toggle.id)

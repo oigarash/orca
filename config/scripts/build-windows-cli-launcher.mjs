@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-export function shouldReuseCompiledWindowsCliLauncher(
+export function shouldReuseCompiledWindowsHelper(
   outputPath,
   sourcePath,
   { reuseCached = false } = {}
@@ -21,11 +21,13 @@ export function shouldReuseCompiledWindowsCliLauncher(
   return statSync(outputPath).mtimeMs >= statSync(sourcePath).mtimeMs
 }
 
+export const shouldReuseCompiledWindowsCliLauncher = shouldReuseCompiledWindowsHelper
+
 function defaultOutputPath(projectRoot) {
   return join(projectRoot, 'native', 'windows-cli-launcher', '.build', 'orca.exe')
 }
 
-function findFrameworkCompiler(env) {
+export function findWindowsFrameworkCompiler(env) {
   const windowsDirectory = env.WINDIR ?? env.SystemRoot
   if (!windowsDirectory) {
     return null
@@ -54,7 +56,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const repoRoot = resolve(import.meta.dirname, '../..')
   const sourcePath = join(repoRoot, 'native', 'windows-cli-launcher', 'OrcaCliLauncher.cs')
   const outputPath = readArg('--output') ?? defaultOutputPath(repoRoot)
-  const compilerPath = findFrameworkCompiler(process.env)
+  const compilerPath = findWindowsFrameworkCompiler(process.env)
 
   if (!compilerPath) {
     throw new Error('Unable to find the .NET Framework C# compiler required for orca.exe.')
@@ -62,7 +64,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 
   mkdirSync(dirname(outputPath), { recursive: true })
   if (
-    shouldReuseCompiledWindowsCliLauncher(outputPath, sourcePath, {
+    shouldReuseCompiledWindowsHelper(outputPath, sourcePath, {
       reuseCached: process.env.ORCA_REUSE_WINDOWS_CLI_LAUNCHER === '1'
     })
   ) {

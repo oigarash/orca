@@ -5,6 +5,7 @@ import type {
   KeyboardLayoutKeyCharacters,
   KeyboardLayoutSnapshot
 } from '../../shared/keyboard-layout-snapshot'
+import { isInputMethodState } from '../../shared/input-method-state'
 
 const HELPER_EXECUTABLE = 'orca-keyboard-layout'
 const HELPER_TIMEOUT_MS = 1000
@@ -58,6 +59,9 @@ export function parseKeyboardLayoutSnapshot(stdout: string): KeyboardLayoutSnaps
   return {
     inputSourceId: optionalString(record.inputSourceId),
     layoutSourceId: optionalString(record.layoutSourceId),
+    inputMethodState: isInputMethodState(record.inputMethodState)
+      ? record.inputMethodState
+      : 'unknown',
     keyCharacters
   }
 }

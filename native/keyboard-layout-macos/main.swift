@@ -9,6 +9,7 @@ struct KeyCharacters: Codable {
 struct KeyboardLayoutSnapshot: Codable {
   let inputSourceId: String?
   let layoutSourceId: String?
+  let inputMethodState: String
   let keyCharacters: [String: KeyCharacters]
 }
 
@@ -31,6 +32,40 @@ func inputSourceId(_ source: TISInputSource?) -> String? {
     return nil
   }
   return Unmanaged<CFString>.fromOpaque(rawId).takeUnretainedValue() as String
+}
+
+func inputMethodState(_ source: TISInputSource?) -> String {
+  guard let source,
+        let rawValue = TISGetInputSourceProperty(
+          source,
+          kTISPropertyInputSourceIsASCIICapable
+        ) else {
+    return "unknown"
+  }
+  let value = Unmanaged<CFTypeRef>.fromOpaque(rawValue).takeUnretainedValue()
+  guard CFGetTypeID(value) == CFBooleanGetTypeID() else {
+    return "unknown"
+  }
+  let isASCIICapable = Unmanaged<CFBoolean>.fromOpaque(rawValue).takeUnretainedValue()
+  if CFBooleanGetValue(isASCIICapable) {
+    return "inactive"
+  }
+  guard let rawLanguages = TISGetInputSourceProperty(
+          source,
+          kTISPropertyInputSourceLanguages
+        ) else {
+    return "unknown"
+  }
+  let languageValue = Unmanaged<CFTypeRef>.fromOpaque(rawLanguages).takeUnretainedValue()
+  guard CFGetTypeID(languageValue) == CFArrayGetTypeID() else {
+    return "unknown"
+  }
+  let languages = Unmanaged<CFArray>.fromOpaque(rawLanguages).takeUnretainedValue() as NSArray
+  let isJapanese = languages.compactMap { $0 as? String }.contains { language in
+    let primaryLanguage = language.lowercased().split(whereSeparator: { $0 == "-" || $0 == "_" })
+    return primaryLanguage.first == "ja"
+  }
+  return isJapanese ? "active" : "unknown"
 }
 
 func translatedCharacter(
@@ -64,6 +99,7 @@ func readStableSnapshot() -> KeyboardLayoutSnapshot? {
   let currentLayoutSource = TISCopyCurrentKeyboardLayoutInputSource()?.takeRetainedValue()
   let capturedInputSourceId = inputSourceId(currentInputSource)
   let capturedLayoutSourceId = inputSourceId(currentLayoutSource)
+  let capturedInputMethodState = inputMethodState(currentInputSource)
   var keyCharacters: [String: KeyCharacters] = [:]
 
   if let currentLayoutSource,
@@ -90,12 +126,14 @@ func readStableSnapshot() -> KeyboardLayoutSnapshot? {
   let finalInputSource = TISCopyCurrentKeyboardInputSource()?.takeRetainedValue()
   let finalLayoutSource = TISCopyCurrentKeyboardLayoutInputSource()?.takeRetainedValue()
   guard capturedInputSourceId == inputSourceId(finalInputSource),
-        capturedLayoutSourceId == inputSourceId(finalLayoutSource) else {
+        capturedLayoutSourceId == inputSourceId(finalLayoutSource),
+        capturedInputMethodState == inputMethodState(finalInputSource) else {
     return nil
   }
   return KeyboardLayoutSnapshot(
     inputSourceId: capturedInputSourceId,
     layoutSourceId: capturedLayoutSourceId,
+    inputMethodState: capturedInputMethodState,
     keyCharacters: keyCharacters
   )
 }

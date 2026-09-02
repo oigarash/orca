@@ -8,6 +8,7 @@ describe('parseKeyboardLayoutSnapshot', () => {
         JSON.stringify({
           inputSourceId: 'com.apple.keylayout.Latvian',
           layoutSourceId: 'com.apple.keylayout.Latvian',
+          inputMethodState: 'inactive',
           keyCharacters: {
             Digit2: {
               unmodified: '2',
@@ -20,6 +21,7 @@ describe('parseKeyboardLayoutSnapshot', () => {
     ).toEqual({
       inputSourceId: 'com.apple.keylayout.Latvian',
       layoutSourceId: 'com.apple.keylayout.Latvian',
+      inputMethodState: 'inactive',
       keyCharacters: {
         Digit2: {
           unmodified: '2',
@@ -40,6 +42,11 @@ describe('parseKeyboardLayoutSnapshot', () => {
       parseKeyboardLayoutSnapshot(
         JSON.stringify({ inputSourceId: 42, keyCharacters: { Digit2: 42 } })
       )
-    ).toEqual({ inputSourceId: null, layoutSourceId: null, keyCharacters: {} })
+    ).toEqual({
+      inputSourceId: null,
+      layoutSourceId: null,
+      inputMethodState: 'unknown',
+      keyCharacters: {}
+    })
   })
 })

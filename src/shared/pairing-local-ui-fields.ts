@@ -10,6 +10,7 @@ export const PAIRING_LOCAL_UI_FIELDS = [
   // client's `desktop` is a different machine — and old hosts reject the unknown key.
   'automationHostFilter',
   'hideWorkspacesFromOtherDevices',
+  'inputMethodStatusVisible',
   'manualRepoOrder',
   'workspaceHostOrder'
 ] as const satisfies readonly (keyof PersistedUIState)[]

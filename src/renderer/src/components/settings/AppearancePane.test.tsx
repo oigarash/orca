@@ -22,6 +22,8 @@ const mocks = vi.hoisted(() => ({
     settingsSearchQuery: 'automations',
     statusBarItems: [],
     toggleStatusBarItem: vi.fn(),
+    inputMethodStatusVisible: true,
+    setInputMethodStatusVisible: vi.fn(),
     usagePercentageDisplay: 'used' as 'used' | 'remaining',
     setUsagePercentageDisplay: vi.fn(),
     recordFeatureInteraction: vi.fn(),
@@ -221,6 +223,7 @@ describe('AppearancePane', () => {
     mocks.state.settingsSearchQuery = 'automations'
     mocks.state.appearanceAccordionDeepLink = null
     mocks.state.usagePercentageDisplay = 'used'
+    mocks.state.inputMethodStatusVisible = true
     // UIZoomControl reads window.api.ui on mount; the inline-expansion pane can
     // render the full Interface section, so provide a minimal renderer bridge
     // without clobbering happy-dom's window.location.
@@ -524,6 +527,24 @@ describe('AppearancePane', () => {
     })
 
     expect(mocks.state.setUsagePercentageDisplay).toHaveBeenCalledWith('remaining')
+  })
+
+  it('toggles the client-local input method status on supported desktop platforms', async () => {
+    mocks.state.appPlatform = 'darwin'
+    mocks.state.settingsSearchQuery = 'input method'
+    const container = await renderAppearancePane(getDefaultSettings('/tmp'))
+    const inputMethodSwitch = container.querySelector<HTMLButtonElement>(
+      'button[role="switch"][aria-label="Input Method"]'
+    )
+
+    expect(inputMethodSwitch).not.toBeNull()
+    expect(inputMethodSwitch?.getAttribute('data-state')).toBe('checked')
+
+    await act(async () => {
+      inputMethodSwitch?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    })
+
+    expect(mocks.state.setInputMethodStatusVisible).toHaveBeenCalledWith(false)
   })
 
   it('records MiniMax status bar toggles as usage tracking interactions', async () => {

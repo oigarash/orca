@@ -154,7 +154,7 @@ export function AppearancePane({
       title: windowSidebarTitle,
       description: windowSidebarSummary
     },
-    ...getStatusBarEntries(),
+    ...getStatusBarEntries({ showInputMethodStatus: isDesktopMac || isDesktopWindows }),
     ...getSidebarEntries(),
     ...getLayoutEntries(),
     getLeftSidebarAppearanceEntry(),
@@ -271,6 +271,7 @@ export function AppearancePane({
           <AppearanceWindowSidebarSection
             settings={settings}
             updateSettings={updateSettings}
+            showInputMethodStatus={isDesktopMac || isDesktopWindows}
             forceVisiblePrimary={windowLabelMatches}
           />
         </AppearanceSection>
