@@ -10,6 +10,8 @@ import { getVisibleUsageProvider, isUsageEmptyState } from './status-bar-provide
 import { getUsageProviderAccountsSectionId } from './usage-provider-settings-target'
 import { CLOSE_ALL_CONTEXT_MENUS_EVENT, useStatusBarMenuFocusHandoff } from './ProviderDetailsMenu'
 import { observeStatusBarContainer } from './status-bar-container-observer'
+import { getRendererAppPlatform } from '../../lib/renderer-app-platform'
+import { isPairedWebClientWindow } from '@/lib/desktop-window-chrome'
 
 export function useStatusBarController(floatingTerminalOpen: boolean) {
   const floatingTerminalShortcut = useShortcutLabel('floatingTerminal.toggle')
@@ -27,6 +29,8 @@ export function useStatusBarController(floatingTerminalOpen: boolean) {
   const usageMenuFocusHandoff = useStatusBarMenuFocusHandoff()
   const statusBarVisible = useAppStore((s) => s.statusBarVisible)
   const statusBarItems = useAppStore((s) => s.statusBarItems)
+  const inputMethodStatusVisible = useAppStore((s) => s.inputMethodStatusVisible)
+  const setInputMethodStatusVisible = useAppStore((s) => s.setInputMethodStatusVisible)
   const recordFeatureInteraction = useAppStore((s) => s.recordFeatureInteraction)
   // Why: reuse the floating-button's unread dot so activity shows for either trigger location (see FloatingTerminalToggleButton).
   const hasFloatingUnread = useAppStore(selectFloatingWorkspaceHasUnread)
@@ -185,6 +189,9 @@ export function useStatusBarController(floatingTerminalOpen: boolean) {
 
   const compact = containerWidth < 900
   const iconOnly = containerWidth < 500
+  const inputMethodStatusSupported =
+    !isPairedWebClientWindow() &&
+    (getRendererAppPlatform() === 'darwin' || getRendererAppPlatform() === 'win32')
   const floatingTerminalActionLabel = floatingTerminalOpen
     ? 'Minimize Floating Workspace'
     : 'Show Floating Workspace'
@@ -245,6 +252,8 @@ export function useStatusBarController(floatingTerminalOpen: boolean) {
     handleUsageMenuOpenChange,
     hasVisibleUsageMeters,
     iconOnly,
+    inputMethodStatusSupported,
+    inputMethodStatusVisible,
     isEmptyUsageState,
     isRefreshing,
     menuOpen,
@@ -254,10 +263,12 @@ export function useStatusBarController(floatingTerminalOpen: boolean) {
     rosterProviders,
     setMenuOpen,
     setMenuPoint,
+    setInputMethodStatusVisible,
     setStatusBarUsageMode,
     showEmptyUsageCta,
     showFloatingTerminalToggle,
     showFloatingWorkspaceAttentionDot,
+    showInputMethodStatus: inputMethodStatusSupported && inputMethodStatusVisible,
     showPorts,
     showResourceUsage,
     showSsh,

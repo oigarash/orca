@@ -8,6 +8,10 @@ import {
   KEYBOARD_LAYOUT_CHANGED_CHANNEL,
   type KeyboardLayoutChangeEvent
 } from '../../shared/keyboard-layout-events'
+import {
+  INPUT_METHOD_STATE_CHANGED_CHANNEL,
+  type InputMethodState
+} from '../../shared/input-method-state'
 import { prepareAndInvokeAppRestart } from '../renderer-restart-wiring'
 import { awaitBeforeUnloadCheckpoint, startupDiagnosticsEnabled } from '../preload-runtime-support'
 import type { PreloadApi } from '../api-types'
@@ -60,6 +64,14 @@ export const appApi = {
       callback(event)
     ipcRenderer.on(KEYBOARD_LAYOUT_CHANGED_CHANNEL, listener)
     return () => ipcRenderer.removeListener(KEYBOARD_LAYOUT_CHANGED_CHANNEL, listener)
+  },
+  getInputMethodState: (): Promise<InputMethodState> =>
+    ipcRenderer.invoke('app:getInputMethodState'),
+  onInputMethodStateChanged: (callback: (state: InputMethodState) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, state: InputMethodState): void =>
+      callback(state)
+    ipcRenderer.on(INPUT_METHOD_STATE_CHANGED_CHANNEL, listener)
+    return () => ipcRenderer.removeListener(INPUT_METHOD_STATE_CHANGED_CHANNEL, listener)
   },
   setUnreadDockBadgeCount: (count: number): Promise<void> =>
     ipcRenderer.invoke('app:setUnreadDockBadgeCount', count),

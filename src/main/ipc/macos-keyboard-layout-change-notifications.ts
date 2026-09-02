@@ -3,7 +3,11 @@ import {
   KEYBOARD_LAYOUT_CHANGED_CHANNEL,
   type KeyboardLayoutChangeEvent
 } from '../../shared/keyboard-layout-events'
-import { waitForMacKeyboardLayoutSnapshotIdle } from './macos-keyboard-layout-snapshot'
+import { INPUT_METHOD_STATE_CHANGED_CHANNEL } from '../../shared/input-method-state'
+import {
+  readMacKeyboardLayoutSnapshot,
+  waitForMacKeyboardLayoutSnapshotIdle
+} from './macos-keyboard-layout-snapshot'
 
 const INPUT_SOURCE_CHANGED_NOTIFICATION =
   'com.apple.Carbon.TISNotifySelectedKeyboardInputSourceChanged'
@@ -16,11 +20,11 @@ export function registerMacKeyboardLayoutChangeNotifications(): () => void {
   let disposed = false
   let subscriptionId: number
   let generation = 0
-  const broadcast = (event: KeyboardLayoutChangeEvent): void => {
+  const broadcast = (channel: string, value: KeyboardLayoutChangeEvent | string): void => {
     for (const window of BrowserWindow.getAllWindows()) {
       try {
         if (!window.isDestroyed() && !window.webContents.isDestroyed()) {
-          window.webContents.send(KEYBOARD_LAYOUT_CHANGED_CHANNEL, event)
+          window.webContents.send(channel, value)
         }
       } catch {
         // The window can close between the liveness check and send.
@@ -29,8 +33,16 @@ export function registerMacKeyboardLayoutChangeNotifications(): () => void {
   }
   const refreshAfterCurrentRead = async (nextGeneration: number): Promise<void> => {
     await waitForMacKeyboardLayoutSnapshotIdle()
+    if (disposed || nextGeneration !== generation) {
+      return
+    }
+    const snapshot = await readMacKeyboardLayoutSnapshot()
     if (!disposed && nextGeneration === generation) {
-      broadcast({ phase: 'refresh', generation: nextGeneration })
+      broadcast(INPUT_METHOD_STATE_CHANGED_CHANNEL, snapshot?.inputMethodState ?? 'unknown')
+      broadcast(KEYBOARD_LAYOUT_CHANGED_CHANNEL, {
+        phase: 'refresh',
+        generation: nextGeneration
+      })
     }
   }
 
@@ -42,7 +54,10 @@ export function registerMacKeyboardLayoutChangeNotifications(): () => void {
           return
         }
         const nextGeneration = ++generation
-        broadcast({ phase: 'invalidated', generation: nextGeneration })
+        broadcast(KEYBOARD_LAYOUT_CHANGED_CHANNEL, {
+          phase: 'invalidated',
+          generation: nextGeneration
+        })
         void refreshAfterCurrentRead(nextGeneration)
       }
     )

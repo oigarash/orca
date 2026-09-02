@@ -6,14 +6,16 @@ const {
   getAllWindows,
   subscribeNotification,
   unsubscribeNotification,
-  waitForSnapshotIdle
+  waitForSnapshotIdle,
+  readSnapshot
 } = vi.hoisted(() => ({
   appOnce: vi.fn(),
   appRemoveListener: vi.fn(),
   getAllWindows: vi.fn(),
   subscribeNotification: vi.fn(),
   unsubscribeNotification: vi.fn(),
-  waitForSnapshotIdle: vi.fn()
+  waitForSnapshotIdle: vi.fn(),
+  readSnapshot: vi.fn()
 }))
 
 vi.mock('electron', () => ({
@@ -23,10 +25,12 @@ vi.mock('electron', () => ({
 }))
 
 vi.mock('./macos-keyboard-layout-snapshot', () => ({
-  waitForMacKeyboardLayoutSnapshotIdle: waitForSnapshotIdle
+  waitForMacKeyboardLayoutSnapshotIdle: waitForSnapshotIdle,
+  readMacKeyboardLayoutSnapshot: readSnapshot
 }))
 
 import { KEYBOARD_LAYOUT_CHANGED_CHANNEL } from '../../shared/keyboard-layout-events'
+import { INPUT_METHOD_STATE_CHANGED_CHANNEL } from '../../shared/input-method-state'
 import {
   MAC_KEYBOARD_INPUT_SOURCE_CHANGED_NOTIFICATION,
   registerMacKeyboardLayoutChangeNotifications
@@ -52,6 +56,7 @@ describe('macOS keyboard layout change notifications', () => {
         finishRead = resolve
       })
     )
+    readSnapshot.mockResolvedValue({ inputMethodState: 'active' })
     subscribeNotification.mockImplementation((_name: string, callback: () => void) => {
       notificationCallback = callback
       return 41
@@ -88,7 +93,8 @@ describe('macOS keyboard layout change notifications', () => {
     finishRead()
     await Promise.resolve()
     await Promise.resolve()
-    expect(send).toHaveBeenNthCalledWith(2, KEYBOARD_LAYOUT_CHANGED_CHANNEL, {
+    expect(send).toHaveBeenNthCalledWith(2, INPUT_METHOD_STATE_CHANGED_CHANNEL, 'active')
+    expect(send).toHaveBeenNthCalledWith(3, KEYBOARD_LAYOUT_CHANGED_CHANNEL, {
       phase: 'refresh',
       generation: 1
     })
@@ -103,7 +109,7 @@ describe('macOS keyboard layout change notifications', () => {
     expect(unsubscribeNotification).toHaveBeenCalledExactlyOnceWith(41)
     expect(appRemoveListener).toHaveBeenCalledWith('will-quit', quitListener)
     notificationCallback?.()
-    expect(send).toHaveBeenCalledTimes(2)
+    expect(send).toHaveBeenCalledTimes(3)
   })
 
   it('does not install a native subscription off macOS', () => {
@@ -123,6 +129,7 @@ describe('macOS keyboard layout change notifications', () => {
         finishRead = resolve
       })
     )
+    readSnapshot.mockResolvedValue({ inputMethodState: 'inactive' })
     subscribeNotification.mockImplementation((_name: string, callback: () => void) => {
       notificationCallback = callback
       return 42
@@ -143,10 +150,11 @@ describe('macOS keyboard layout change notifications', () => {
     finishRead()
     await Promise.resolve()
     await Promise.resolve()
+    expect(send).toHaveBeenNthCalledWith(3, INPUT_METHOD_STATE_CHANGED_CHANNEL, 'inactive')
     expect(send).toHaveBeenLastCalledWith(KEYBOARD_LAYOUT_CHANGED_CHANNEL, {
       phase: 'refresh',
       generation: 2
     })
-    expect(send).toHaveBeenCalledTimes(3)
+    expect(send).toHaveBeenCalledTimes(4)
   })
 })

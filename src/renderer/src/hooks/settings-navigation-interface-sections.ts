@@ -28,7 +28,8 @@ export function buildInterfaceSettingsSections({
       searchEntries: getAppearancePaneSearchEntries({
         showWarpImport: showDesktopOnlySettings,
         showSystemTray: showDesktopOnlySettings && isWindows,
-        showMenuBarIcon: showDesktopOnlySettings && isMac
+        showMenuBarIcon: showDesktopOnlySettings && isMac,
+        showInputMethodStatus: showDesktopOnlySettings && (isMac || isWindows)
       }),
       group: 'interface'
     },

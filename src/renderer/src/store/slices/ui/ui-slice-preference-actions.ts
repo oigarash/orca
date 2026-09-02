@@ -236,6 +236,11 @@ export function createUiPreferenceActions(set: UISliceSet, get: UISliceGet): Par
       window.api.ui.set({ statusBarVisible: v }).catch(console.error)
       set({ statusBarVisible: v })
     },
+    inputMethodStatusVisible: true,
+    setInputMethodStatusVisible: (visible) => {
+      window.api.ui.set({ inputMethodStatusVisible: visible }).catch(console.error)
+      set({ inputMethodStatusVisible: visible })
+    },
     usagePercentageDisplay: DEFAULT_USAGE_PERCENTAGE_DISPLAY,
     setUsagePercentageDisplay: (display) => {
       const normalized = normalizeUsagePercentageDisplay(display)

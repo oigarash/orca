@@ -1,4 +1,4 @@
-import { Activity, Plug, Server } from 'lucide-react'
+import { Activity, Keyboard, Plug, Server } from 'lucide-react'
 import React from 'react'
 import {
   DropdownMenu,
@@ -19,9 +19,12 @@ export function StatusBarVisibilityMenu({
 }): React.JSX.Element {
   const {
     detectedAgentIds,
+    inputMethodStatusSupported,
+    inputMethodStatusVisible,
     menuOpen,
     menuPoint,
     recordFeatureInteraction,
+    setInputMethodStatusVisible,
     setMenuOpen,
     statusBarItems,
     toggleStatusBarItem
@@ -133,6 +136,15 @@ export function StatusBarVisibilityMenu({
             {translate('auto.components.status.bar.StatusBar.grokUsageMenu', 'Grok Usage')}
           </DropdownMenuCheckboxItem>
         )}
+        {inputMethodStatusSupported ? (
+          <DropdownMenuCheckboxItem
+            checked={inputMethodStatusVisible}
+            onCheckedChange={() => setInputMethodStatusVisible(!inputMethodStatusVisible)}
+          >
+            <Keyboard className="size-3.5" />
+            {translate('auto.components.status.bar.StatusBar.inputMethodStatus', 'Input Method')}
+          </DropdownMenuCheckboxItem>
+        ) : null}
         <DropdownMenuCheckboxItem
           checked={statusBarItems.includes('ssh')}
           onCheckedChange={() => {
