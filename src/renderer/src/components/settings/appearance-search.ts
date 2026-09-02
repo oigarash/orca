@@ -6,11 +6,13 @@ import { translate } from '@/i18n/i18n'
 import { translateSearchKeyword } from './settings-search-keywords'
 import { SHOW_UI_LANGUAGE_SETTING } from '@/i18n/supported-languages'
 import { getStatusBarToggles } from './appearance-status-bar-search'
+import { getInputMethodStatusBarToggle } from './appearance-input-method-status-search'
 import { getUsagePercentageDisplayEntry } from './appearance-usage-percentage-search'
 import { getMenuBarIconEntries, getSystemTrayEntries } from './appearance-system-presence-search'
 
 export {
   getMenuBarIconEntries,
+  getInputMethodStatusBarToggle,
   getStatusBarToggles,
   getSystemTrayEntries,
   getUsagePercentageDisplayEntry
@@ -162,14 +164,19 @@ export const getTitlebarEntries = createLocalizedCatalog((): SettingsSearchEntry
   }
 ])
 
-export const getStatusBarEntries = createLocalizedCatalog((): SettingsSearchEntry[] => [
-  getUsagePercentageDisplayEntry(),
-  ...getStatusBarToggles().map(({ title, description, keywords }) => ({
-    title,
-    description,
-    keywords
-  }))
-])
+export function getStatusBarEntries(
+  options: { showInputMethodStatus?: boolean } = {}
+): SettingsSearchEntry[] {
+  return [
+    getUsagePercentageDisplayEntry(),
+    ...(options.showInputMethodStatus === false ? [] : [getInputMethodStatusBarToggle()]),
+    ...getStatusBarToggles().map(({ title, description, keywords }) => ({
+      title,
+      description,
+      keywords
+    }))
+  ]
+}
 
 export { getLeftSidebarAppearanceEntry, getSidebarEntries }
 
@@ -224,6 +231,7 @@ type AppearancePaneSearchOptions = {
   showWarpImport?: boolean
   showSystemTray?: boolean
   showMenuBarIcon?: boolean
+  showInputMethodStatus?: boolean
 }
 
 function buildAppearancePaneSearchEntries(
@@ -238,7 +246,7 @@ function buildAppearancePaneSearchEntries(
     ...getTerminalAppearanceSearchEntries(options),
     ...getLayoutEntries(),
     ...getTitlebarEntries(),
-    ...getStatusBarEntries(),
+    ...getStatusBarEntries({ showInputMethodStatus: options.showInputMethodStatus }),
     ...getSidebarEntries(),
     ...getAppIconEntries(),
     ...getSystemTrayEntries(options),
@@ -252,6 +260,7 @@ export function getAppearancePaneSearchEntries(
   return buildAppearancePaneSearchEntries({
     showWarpImport: options.showWarpImport ?? true,
     showSystemTray: options.showSystemTray,
-    showMenuBarIcon: options.showMenuBarIcon
+    showMenuBarIcon: options.showMenuBarIcon,
+    showInputMethodStatus: options.showInputMethodStatus
   })
 }

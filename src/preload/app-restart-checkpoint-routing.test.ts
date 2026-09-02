@@ -5,6 +5,7 @@ import {
   ORCA_APP_RESTART_STARTED_EVENT
 } from '../shared/updater-renderer-events'
 import { KEYBOARD_LAYOUT_CHANGED_CHANNEL } from '../shared/keyboard-layout-events'
+import { INPUT_METHOD_STATE_CHANGED_CHANNEL } from '../shared/input-method-state'
 
 const { exposeInMainWorld, invoke, on, removeListener, send, sendSync } = vi.hoisted(() => ({
   exposeInMainWorld: vi.fn(),
@@ -111,5 +112,23 @@ describe('native preload destructive app actions', () => {
     expect(invoke).toHaveBeenCalledWith('app:getKeyboardLayoutSnapshot')
     expect(onKeyboardLayoutChanged).toHaveBeenCalledExactlyOnceWith(payload)
     expect(removeListener).toHaveBeenCalledWith(KEYBOARD_LAYOUT_CHANGED_CHANNEL, listener)
+  })
+
+  it('routes local input method state reads and changes', async () => {
+    const api = await loadApi()
+    invoke.mockResolvedValue('inactive')
+
+    await expect(api.app.getInputMethodState()).resolves.toBe('inactive')
+    const onInputMethodStateChanged = vi.fn()
+    const unsubscribe = api.app.onInputMethodStateChanged(onInputMethodStateChanged)
+    const listener = on.mock.calls.find(
+      ([channel]) => channel === INPUT_METHOD_STATE_CHANGED_CHANNEL
+    )?.[1] as ((event: unknown, payload: unknown) => void) | undefined
+    listener?.({}, 'active')
+    unsubscribe()
+
+    expect(invoke).toHaveBeenCalledWith('app:getInputMethodState')
+    expect(onInputMethodStateChanged).toHaveBeenCalledExactlyOnceWith('active')
+    expect(removeListener).toHaveBeenCalledWith(INPUT_METHOD_STATE_CHANGED_CHANNEL, listener)
   })
 })

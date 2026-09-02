@@ -104,6 +104,8 @@ export type PersistedUIState = {
   _grokStatusBarDefaultAdded?: boolean
   statusBarItems: StatusBarItem[]
   statusBarVisible: boolean
+  /** Client-local opt-in for the native input-method indicator; never paired to an execution host. */
+  inputMethodStatusVisible?: boolean
   /** Why: this is client-side presentation, not a provider/account or execution-host setting. */
   usagePercentageDisplay?: UsagePercentageDisplay
   /** Client-side footer presentation; verbose preserves the pre-roster all-window default. */

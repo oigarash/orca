@@ -21,6 +21,10 @@ import {
 import type { DocPreviewGrantRequest } from './api/doc-preview-api'
 import type { AppIdentity } from '../shared/app-identity'
 import type { MacCapturedDigitRowChord } from '../shared/macos-symbolic-hotkeys'
+import {
+  INPUT_METHOD_STATE_CHANGED_CHANNEL,
+  type InputMethodState
+} from '../shared/input-method-state'
 import type { ComputerAwakeStatus } from '../shared/computer-awake-mode'
 import type {
   DashboardRevealAgentArgs,
@@ -616,6 +620,14 @@ const api = {
       ): void => callback(event)
       ipcRenderer.on(KEYBOARD_LAYOUT_CHANGED_CHANNEL, listener)
       return () => ipcRenderer.removeListener(KEYBOARD_LAYOUT_CHANGED_CHANNEL, listener)
+    },
+    getInputMethodState: (): Promise<InputMethodState> =>
+      ipcRenderer.invoke('app:getInputMethodState'),
+    onInputMethodStateChanged: (callback: (state: InputMethodState) => void): (() => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, state: InputMethodState): void =>
+        callback(state)
+      ipcRenderer.on(INPUT_METHOD_STATE_CHANGED_CHANNEL, listener)
+      return () => ipcRenderer.removeListener(INPUT_METHOD_STATE_CHANGED_CHANNEL, listener)
     },
     setUnreadDockBadgeCount: (count: number): Promise<void> =>
       ipcRenderer.invoke('app:setUnreadDockBadgeCount', count),

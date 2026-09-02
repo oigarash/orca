@@ -68,6 +68,9 @@ describe('web UI preload API', () => {
     const listener = vi.fn()
     expect(api.app.onKeyboardLayoutChanged(listener)).toEqual(expect.any(Function))
     expect(listener).not.toHaveBeenCalled()
+    await expect(api.app.getInputMethodState()).resolves.toBe('unknown')
+    expect(api.app.onInputMethodStateChanged(listener)).toEqual(expect.any(Function))
+    expect(listener).not.toHaveBeenCalled()
   })
 
   it('migrates missing right sidebar visibility from the effective web legacy default', async () => {
@@ -463,12 +466,14 @@ describe('web UI preload API', () => {
   const browserLocalUiSamples: Record<PairingLocalUiField, unknown> = {
     automationHostFilter: { kind: 'host', hostKey: 'browser-local-host-key' },
     hideWorkspacesFromOtherDevices: true,
+    inputMethodStatusVisible: true,
     manualRepoOrder: [{ hostId: 'runtime:web-env-1', repoId: 'repo-b' }],
     workspaceHostOrder: ['runtime:web-env-1', 'local']
   }
   const hostUiSamples: Record<PairingLocalUiField, unknown> = {
     automationHostFilter: { kind: 'all' },
     hideWorkspacesFromOtherDevices: false,
+    inputMethodStatusVisible: false,
     manualRepoOrder: [{ hostId: 'local', repoId: 'repo-a' }],
     workspaceHostOrder: ['local', 'ssh:box']
   }
