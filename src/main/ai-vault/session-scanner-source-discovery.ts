@@ -3,11 +3,14 @@ import type { AiVaultAgent, AiVaultScanIssue } from '../../shared/ai-vault-types
 import { discoverFiles } from './session-scanner-discovery'
 import { opencodeDiscoveries } from './session-scanner-opencode-sources'
 import { antigravityDiscoveries } from './session-scanner-antigravity-sources'
-import { AI_VAULT_AGENT_SOURCES, type AiVaultAgentSource } from './session-scanner-agent-sources'
+import {
+  AGENT_SESSION_SOURCES,
+  type AgentSessionSource
+} from '../session-history/agent-session-source-catalog'
 import { normalizedWslHomeDirs } from './session-scanner-roots'
 import type { AiVaultScanOptions, SessionFileDiscovery } from './session-scanner-types'
 
-export { DEFAULT_CODEX_HOME_DIR } from './session-scanner-agent-sources'
+export { DEFAULT_CODEX_HOME_DIR } from '../session-history/agent-session-source-catalog'
 
 export async function discoverAiVaultSessionSources(args: {
   options: AiVaultScanOptions
@@ -23,7 +26,7 @@ export async function discoverAiVaultSessionSources(args: {
     // and the SQLite scanner (1.17.x); dedup by sessionId happens inside.
     ...opencodeDiscoveries(options, wslHomeDirs, limitPerAgent, issues),
     ...antigravityDiscoveries(options, wslHomeDirs, limitPerAgent, issues),
-    ...Object.entries(AI_VAULT_AGENT_SOURCES).flatMap(([agent, source]) =>
+    ...Object.entries(AGENT_SESSION_SOURCES).flatMap(([agent, source]) =>
       source
         ? agentDiscoveries(
             agent as AiVaultAgent,
@@ -40,7 +43,7 @@ export async function discoverAiVaultSessionSources(args: {
 
 function agentDiscoveries(
   agent: AiVaultAgent,
-  source: AiVaultAgentSource,
+  source: AgentSessionSource,
   options: AiVaultScanOptions,
   wslHomeDirs: readonly string[],
   limit: number,
