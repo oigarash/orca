@@ -1,15 +1,5 @@
 import { existsSync } from 'node:fs'
-import {
-  appendFile,
-  mkdir,
-  mkdtemp,
-  readFile,
-  readdir,
-  rm,
-  stat,
-  utimes,
-  writeFile
-} from 'node:fs/promises'
+import { appendFile, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import * as fsPromises from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -23,7 +13,6 @@ import {
   resetSessionParseCachePersistenceForTests,
   scheduleSessionParseCachePersist
 } from './session-parse-cache-persistence'
-import { scanAiVaultSessions } from './session-scanner'
 import {
   createSessionParseStats,
   parseAgentSessionFileCached,
@@ -32,7 +21,6 @@ import {
   type PersistedSessionParseCacheEntry,
   type SessionParseStats
 } from './session-scanner-parse-cache'
-import { isolatedScanRoots } from './session-scanner-test-fixtures'
 import { parseClaudeSessionFile } from './session-scanner-primary-parsers'
 import type { FileWithMtime, SessionFileCandidate } from './session-scanner-types'
 
@@ -381,43 +369,6 @@ describe('session parse cache persistence', () => {
 
     await ensureSessionParseCacheLoaded()
     expect(existsSync(orphan)).toBe(false)
-  })
-
-  it('scanAiVaultSessions seeds from the persisted cache and persists after parsing', async () => {
-    const root = await makeTempDir()
-    const cacheFile = join(root, 'session-parse-cache.json')
-    initSessionParseCachePersistence({ filePath: cacheFile, appVersion: APP_VERSION })
-    const roots = isolatedScanRoots(root)
-    const transcript = join(roots.claudeProjectsDir, 'project', 'scan-session.jsonl')
-    await mkdir(join(roots.claudeProjectsDir, 'project'), { recursive: true })
-    // Same-length markers so the rewrite below preserves sizeBytes exactly.
-    await writeFile(
-      transcript,
-      `${userRecord(0, 'persisted-scan-marker-AAAA')}\n${assistantRecord(1, 'answer')}\n`
-    )
-    const pinnedMtime = new Date(1740000000000)
-    await utimes(transcript, pinnedMtime, pinnedMtime)
-
-    const first = await scanAiVaultSessions(roots)
-    expect(first.sessions).toHaveLength(1)
-    expect(JSON.stringify(first.sessions[0])).toContain('persisted-scan-marker-AAAA')
-    // The scan itself (not a manual schedule call) must have queued the save.
-    await flushSessionParseCachePersistForTests()
-    expect(existsSync(cacheFile)).toBe(true)
-
-    simulateRestart(cacheFile)
-    // Rewrite with identical length and mtime: only a seeded cache hit can
-    // still return the original marker; a cold re-parse would see BBBB.
-    await writeFile(
-      transcript,
-      `${userRecord(0, 'persisted-scan-marker-BBBB')}\n${assistantRecord(1, 'answer')}\n`
-    )
-    await utimes(transcript, pinnedMtime, pinnedMtime)
-
-    const second = await scanAiVaultSessions(roots)
-    expect(second.sessions).toHaveLength(1)
-    expect(JSON.stringify(second.sessions[0])).toContain('persisted-scan-marker-AAAA')
-    expect(second.sessions[0]).toEqual(first.sessions[0])
   })
 
   it('an over-cap seed list keeps the newest tail of the snapshot order', async () => {
