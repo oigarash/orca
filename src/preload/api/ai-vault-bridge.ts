@@ -1,4 +1,3 @@
-import { ipcRenderer } from 'electron'
 import type {
   AiVaultDeleteSessionArgs,
   AiVaultDeleteSessionResult
@@ -12,23 +11,20 @@ import type { AiVaultSessionTitlesArgs } from '../../shared/ai-vault-session-tit
 import type { AiVaultPrepareSessionResumeArgs } from '../../shared/ai-vault-resume-preparation'
 
 export const aiVaultApi = {
-  listSessions: (args?: AiVaultListArgs): Promise<unknown> =>
-    ipcRenderer.invoke('aiVault:listSessions', args),
-  resolveSessionTitles: (args: AiVaultSessionTitlesArgs): Promise<unknown> =>
-    ipcRenderer.invoke('aiVault:resolveSessionTitles', args),
-  cancelListSessions: (args: { requestToken: string }): Promise<void> =>
-    ipcRenderer.invoke('aiVault:cancelListSessions', args),
-  prepareSessionResume: (args: AiVaultPrepareSessionResumeArgs): Promise<unknown> =>
-    ipcRenderer.invoke('aiVault:prepareSessionResume', args),
-  listSubagentSessions: (args: AiVaultSubagentListArgs): Promise<unknown> =>
-    ipcRenderer.invoke('aiVault:listSubagentSessions', args),
-  getFirstUserPrompt: (args: AiVaultFirstUserPromptArgs): Promise<unknown> =>
-    ipcRenderer.invoke('aiVault:getFirstUserPrompt', args),
+  listSessions: (_args?: AiVaultListArgs): Promise<unknown> =>
+    Promise.resolve({ sessions: [], issues: [], scannedAt: new Date().toISOString() }),
+  resolveSessionTitles: (_args: AiVaultSessionTitlesArgs): Promise<unknown> =>
+    Promise.resolve({ titles: [] }),
+  cancelListSessions: (_args: { requestToken: string }): Promise<void> => Promise.resolve(),
+  prepareSessionResume: (_args: AiVaultPrepareSessionResumeArgs): Promise<unknown> =>
+    Promise.resolve({ useRealCodexHome: false }),
+  listSubagentSessions: (_args: AiVaultSubagentListArgs): Promise<unknown> =>
+    Promise.resolve({ sessions: [], issues: [] }),
+  getFirstUserPrompt: (_args: AiVaultFirstUserPromptArgs): Promise<unknown> =>
+    Promise.resolve({ prompt: null }),
   deleteSession: (args: AiVaultDeleteSessionArgs): Promise<AiVaultDeleteSessionResult> =>
-    ipcRenderer.invoke('aiVault:deleteSession', args),
-  onWindowFocused: (callback: () => void): (() => void) => {
-    const listener = (_event: Electron.IpcRendererEvent) => callback()
-    ipcRenderer.on('aiVault:windowFocused', listener)
-    return () => ipcRenderer.removeListener('aiVault:windowFocused', listener)
-  }
+    Promise.resolve({ outcome: 'rejected', agent: args.agent, reason: 'non-local-host' }),
+  onWindowFocused:
+    (_callback: () => void): (() => void) =>
+    () => {}
 }

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({ walk: vi.fn() }))
 
-vi.mock('../ai-vault/session-scanner-discovery', () => ({
+vi.mock('./session-file-walker', () => ({
   walkSessionFiles: mocks.walk
 }))
 

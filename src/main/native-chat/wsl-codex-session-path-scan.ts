@@ -1,6 +1,6 @@
 import type { Dirent } from 'node:fs'
 import { basename, extname } from 'node:path'
-import { walkSessionFiles } from '../ai-vault/session-scanner-discovery'
+import { walkSessionFiles } from './session-file-walker'
 import { wslGatedReaddir } from './wsl-transcript-fs-access'
 
 type ScanWaiter = {

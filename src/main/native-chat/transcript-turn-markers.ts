@@ -6,7 +6,7 @@
 // rename can't leave a visible "interrupted" row that never settles (or vice
 // versa).
 
-import { extractString } from '../ai-vault/session-scanner-values'
+import { extractString } from './transcript-value-parsing'
 
 /**
  * The `interruptedMessageId` on a Claude user row when that row is Claude's

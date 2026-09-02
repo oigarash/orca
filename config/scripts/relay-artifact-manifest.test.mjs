@@ -1,8 +1,7 @@
 // Packaged-relay contract: what `build:relay` actually writes to disk.
 //
 // Asserts against a real build, not the source tree — the unit suites cannot see
-// this gap, because the WSL transcript dispatcher runs in-process under vitest
-// and never forks.
+// this gap, because unit suites do not inspect the staged relay directory.
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
@@ -62,20 +61,15 @@ describe('packaged relay artifact manifest', () => {
     expect(version.split('+')[1]).toBe(hash.digest('hex').slice(0, 12))
   })
 
-  it('ships the WSL transcript helper beside the service that forks it', () => {
+  it('does not ship the removed AI Vault service or handlers', () => {
     for (const platform of RELAY_BUILD_PLATFORMS) {
       const outDir = join(relayOutDir, platform)
-      const service = readFileSync(join(outDir, 'relay-ai-vault-service.js'), 'utf8')
+      const relay = readFileSync(join(outDir, 'relay.js'), 'utf8')
 
-      // The bundled service reaches the fork, so the entry must sit beside it:
-      // the spawn resolves the child relative to its own bundle directory.
-      expect(service, `${platform} service no longer forks the helper`).toContain(
-        'wsl-transcript-fs-process-entry.js'
-      )
-      expect(
-        existsSync(join(outDir, 'wsl-transcript-fs-process-entry.js')),
-        `${platform} forks a helper it does not ship`
-      ).toBe(true)
+      expect(existsSync(join(outDir, 'relay-ai-vault-service.js'))).toBe(false)
+      expect(existsSync(join(outDir, 'wsl-transcript-fs-process-entry.js'))).toBe(false)
+      expect(relay).not.toContain('aiVault.listSessions')
+      expect(relay).not.toContain('relay-ai-vault-service')
     }
   })
 })

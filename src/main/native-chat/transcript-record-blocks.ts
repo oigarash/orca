@@ -7,7 +7,7 @@ import type {
   NativeChatImageRefBlock,
   NativeChatToolResultBlock
 } from '../../shared/native-chat-types'
-import { asRecord, extractString } from '../ai-vault/session-scanner-values'
+import { asRecord, extractString } from './transcript-value-parsing'
 
 /** Coerce an arbitrary tool-result payload into a single output string. */
 export function toolResultOutput(value: unknown): string {

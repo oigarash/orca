@@ -5,8 +5,6 @@ import { agentHookServer } from '../agent-hooks/server'
 import { browserManager } from '../browser/browser-manager'
 import { loadAgentSessionClaimSigner } from '../runtime/agent-session-claim-identity'
 import { getProfileUserDataPath } from '../orca-profiles/profile-storage-paths'
-import { prepareCodexAiVaultSessionResume } from '../codex/codex-ai-vault-session-resume'
-import { resolveHostCodexSessionSourceHome } from '../codex/codex-session-source-home'
 import { isAgentStatusHooksEnabled } from '../agent-hooks/managed-agent-hook-controls'
 import { getDaemonProvider } from '../daemon/daemon-init'
 import type { TerminalSideEffectBatch } from '../../shared/terminal-side-effect-facts'
@@ -96,14 +94,9 @@ export function initializeMainProcessRuntime(): OrcaRuntimeService {
     // constructed with this runtime and does not exist yet at this point.
     getPairedDeviceName: (pairedDeviceId) =>
       state.runtimeRpc?.getDeviceRegistry()?.getDevice(pairedDeviceId)?.name ?? null,
-    // Why: source codex-home here (runs in window AND serve) so aiVault.listSessions includes managed-Codex sessions; registerCoreHandlers is window-only.
-    getAdditionalAiVaultCodexHomePaths: () =>
+    // Native Chat resolves transcripts on both window and headless serve hosts.
+    getAdditionalCodexHomePaths: () =>
       state.codexRuntimeHome?.getHostCodexHomePathsForSessionDiscovery() ?? [],
-    prepareAiVaultSessionResume: (args) =>
-      prepareCodexAiVaultSessionResume(args, {
-        runtimeHome: state.codexRuntimeHome,
-        systemCodexHomePath: resolveHostCodexSessionSourceHome(store.getSettings())
-      }),
     prepareCodexStructuredLaunch: ({ workspacePath, launchEnv }) =>
       prepareCodexRuntimeHomeForLaunch(undefined, launchEnv, {
         launchAgent: 'codex',

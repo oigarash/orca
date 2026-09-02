@@ -4,8 +4,6 @@ import { attachMainWindowServices } from '../window/attach-main-window-services'
 import { initTccPromptNotice } from '../macos-tcc-prompt-notice'
 import { resolveUpdateInstallMode } from '../updater'
 import { mainProcessState as state } from './main-process-state'
-import { prepareCodexAiVaultSessionResume } from '../codex/codex-ai-vault-session-resume'
-import { resolveHostCodexSessionSourceHome } from '../codex/codex-session-source-home'
 import { preserveAgentAuthBeforeRestart } from '../agent-auth-restart-preservation'
 import {
   emitPluginWorktreeLifecycle,
@@ -73,13 +71,6 @@ export function attachMainWindowCoreServices(
     state.crashReports ?? undefined,
     keybindings,
     {
-      getAdditionalAiVaultCodexHomePaths: () =>
-        codexRuntimeHome.getHostCodexHomePathsForSessionDiscovery(),
-      prepareAiVaultSessionResume: (args) =>
-        prepareCodexAiVaultSessionResume(args, {
-          runtimeHome: codexRuntimeHome,
-          systemCodexHomePath: resolveHostCodexSessionSourceHome(store.getSettings())
-        }),
       onBeforeRelaunch: async () => {
         state.isQuitting = true
         state.desktopRelayService?.fenceAndCloseNow()

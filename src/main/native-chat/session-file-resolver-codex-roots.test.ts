@@ -23,7 +23,7 @@ vi.mock('../wsl-running-path-filter', async (importOriginal) => ({
 }))
 
 const scanned = vi.hoisted(() => ({ dirs: [] as string[] }))
-vi.mock('../ai-vault/session-scanner-discovery', () => ({
+vi.mock('./session-file-walker', () => ({
   walkSessionFiles: async (dir: string) => {
     scanned.dirs.push(dir)
     return []

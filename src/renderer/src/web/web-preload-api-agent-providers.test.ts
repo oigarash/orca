@@ -209,18 +209,8 @@ describe('web AI Vault preload API', () => {
         force: true,
         scopePaths: ['/srv/app']
       })
-    ).resolves.toEqual(scanResult)
-    expect(runtimeCalls).toEqual([
-      {
-        method: 'aiVault.listSessions',
-        params: {
-          limit: 25,
-          force: true,
-          scopePaths: ['/srv/app'],
-          executionHostId: 'runtime:web-env-1'
-        }
-      }
-    ])
+    ).resolves.toEqual({ sessions: [], issues: [], scannedAt: expect.any(String) })
+    expect(runtimeCalls).toEqual([])
   })
 
   it('returns unavailable history for explicit non-runtime host scopes', async () => {
@@ -248,16 +238,7 @@ describe('web AI Vault preload API', () => {
 
     await expect(
       globals.window.api.aiVault.listSessions({ executionHostScope: 'local' })
-    ).resolves.toEqual({
-      sessions: [],
-      issues: [
-        expect.objectContaining({
-          executionHostId: 'local',
-          agent: 'codex'
-        })
-      ],
-      scannedAt: expect.any(String)
-    })
+    ).resolves.toEqual({ sessions: [], issues: [], scannedAt: expect.any(String) })
     expect(runtimeCalls).toEqual([])
   })
 })
