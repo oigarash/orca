@@ -1,0 +1,3 @@
+src/main/ai-vault/session-scanner-agent-sources.ts
+src/main/ai-vault/session-scanner-service-env.test.ts
+src/main/ai-vault/session-scanner-service-env.ts

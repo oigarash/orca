@@ -1,0 +1,143 @@
+name: Build sanitized custom release
+
+on:
+  push:
+    branches:
+      - automation/sanitized-releases
+    paths:
+      - .github/downstream-customization-stack.txt
+      - .github/downstream-forbidden-paths.txt
+      - .github/downstream-release-request.json
+      - .github/workflows/build-sanitized-custom-release.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sanitized-custom-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository == 'oigarash/orca'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout automation branch
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Validate release request
+        id: request
+        shell: bash
+        run: |
+          set -euo pipefail
+          request_file=.github/downstream-release-request.json
+          request_id=$(jq -er '.request_id | select(type == "string" and length > 0)' "$request_file")
+          upstream_ref=$(jq -er '.upstream_ref | select(type == "string" and length > 0)' "$request_file")
+          target_branch=$(jq -er '.target_branch | select(type == "string" and length > 0)' "$request_file")
+          dry_run=$(jq -r 'if (.dry_run | type) == "boolean" then .dry_run else error("dry_run must be boolean") end' "$request_file")
+
+          [[ "$request_id" =~ ^[A-Za-z0-9._-]+$ ]]
+          [[ "$upstream_ref" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-.][A-Za-z0-9.]+)?$ ]]
+          [[ "$target_branch" == custom/v* ]]
+          git check-ref-format --branch "$target_branch"
+
+          {
+            echo "request_id=$request_id"
+            echo "upstream_ref=$upstream_ref"
+            echo "target_branch=$target_branch"
+            echo "dry_run=$dry_run"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Apply downstream customization stack
+        id: build
+        shell: bash
+        env:
+          UPSTREAM_REF: ${{ steps.request.outputs.upstream_ref }}
+          TARGET_BRANCH: ${{ steps.request.outputs.target_branch }}
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --heads origin "refs/heads/$TARGET_BRANCH" >/dev/null 2>&1; then
+            echo "::error::Target branch already exists: $TARGET_BRANCH"
+            exit 1
+          fi
+
+          stack_file="$RUNNER_TEMP/downstream-customization-stack.txt"
+          forbidden_file="$RUNNER_TEMP/downstream-forbidden-paths.txt"
+          cp .github/downstream-customization-stack.txt "$stack_file"
+          cp .github/downstream-forbidden-paths.txt "$forbidden_file"
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git remote add upstream https://github.com/stablyai/orca.git
+          git fetch --force --no-tags upstream "refs/tags/$UPSTREAM_REF"
+          upstream_commit=$(git rev-parse 'FETCH_HEAD^{commit}')
+          git switch --detach "$upstream_commit"
+
+          while IFS= read -r patch_commit; do
+            [[ -z "$patch_commit" || "$patch_commit" == \#* ]] && continue
+            [[ "$patch_commit" =~ ^[0-9a-f]{40}$ ]]
+            git cat-file -e "$patch_commit^{commit}"
+            git cherry-pick -x "$patch_commit"
+          done < "$stack_file"
+
+          while IFS= read -r forbidden_path; do
+            [[ -z "$forbidden_path" || "$forbidden_path" == \#* ]] && continue
+            if git ls-files --error-unmatch -- "$forbidden_path" >/dev/null 2>&1; then
+              echo "::error file=$forbidden_path::Forbidden path is still tracked"
+              exit 1
+            fi
+            if [[ -e "$forbidden_path" || -L "$forbidden_path" ]]; then
+              echo "::error file=$forbidden_path::Forbidden path still exists"
+              exit 1
+            fi
+          done < "$forbidden_file"
+
+          {
+            echo "upstream_commit=$upstream_commit"
+            echo "sanitized_commit=$(git rev-parse HEAD)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-dependencies
+        with:
+          native-runtime: node
+
+      - name: Typecheck
+        run: pnpm tc
+
+      - name: Test affected modules
+        run: >-
+          pnpm test
+          src/main/ai-vault
+          src/main/native-chat/wsl-transcript-fs-process-client.test.ts
+          src/relay/ai-vault-service-spawn.test.ts
+
+      - name: Push sanitized branch
+        if: steps.request.outputs.dry_run == 'false'
+        env:
+          TARGET_BRANCH: ${{ steps.request.outputs.target_branch }}
+        run: git push origin "HEAD:refs/heads/$TARGET_BRANCH"
+
+      - name: Write run summary
+        if: always()
+        env:
+          DRY_RUN: ${{ steps.request.outputs.dry_run }}
+          REQUEST_ID: ${{ steps.request.outputs.request_id }}
+          SANITIZED_COMMIT: ${{ steps.build.outputs.sanitized_commit }}
+          TARGET_BRANCH: ${{ steps.request.outputs.target_branch }}
+          UPSTREAM_COMMIT: ${{ steps.build.outputs.upstream_commit }}
+          UPSTREAM_REF: ${{ steps.request.outputs.upstream_ref }}
+        run: |
+          {
+            echo "## Sanitized custom release"
+            echo
+            echo "- Request: \`$REQUEST_ID\`"
+            echo "- Upstream: \`$UPSTREAM_REF\` (\`$UPSTREAM_COMMIT\`)"
+            echo "- Sanitized commit: \`$SANITIZED_COMMIT\`"
+            echo "- Target branch: \`$TARGET_BRANCH\`"
+            echo "- Dry run: \`$DRY_RUN\`"
+          } >> "$GITHUB_STEP_SUMMARY"
