@@ -14,7 +14,10 @@ import {
   type ExecutionHostId
 } from '../../shared/execution-host'
 import { isPathInsideOrEqual } from '../../shared/cross-platform-path'
-import { AI_VAULT_AGENT_SOURCES, isDiscoverableSessionFile } from './session-scanner-agent-sources'
+import {
+  AGENT_SESSION_SOURCES,
+  isDiscoverableAgentSessionFile
+} from '../session-history/agent-session-source-catalog'
 import { subagentTranscriptsDirFor } from './session-scanner-subagent-transcripts'
 import type { AiVaultScanOptions } from './session-scanner-types'
 
@@ -65,7 +68,7 @@ export function validateAiVaultSessionDeleteTarget(
   // resolve() collapses `..` first: isPathInsideOrEqual compares textually and
   // would otherwise pass `<root>/../../etc/x.jsonl`.
   const resolvedPath = resolve(filePath)
-  const source = AI_VAULT_AGENT_SOURCES[agent]
+  const source = AGENT_SESSION_SOURCES[agent]
   const roots = source
     .rootDirs(args.rootOptions ?? {}, args.wslHomeDirs ?? [])
     // Why: OMP_CODING_AGENT_DIR='/' normalizes to '', which resolve()s to the
@@ -80,7 +83,7 @@ export function validateAiVaultSessionDeleteTarget(
   }
   // The scanner's own accept rule, so a path it would never have surfaced as a
   // session row can't be accepted as a delete target either.
-  if (!isDiscoverableSessionFile(source, matchedRoot, resolvedPath)) {
+  if (!isDiscoverableAgentSessionFile(source, matchedRoot, resolvedPath)) {
     return rejected(agent, 'undiscoverable-path')
   }
 
