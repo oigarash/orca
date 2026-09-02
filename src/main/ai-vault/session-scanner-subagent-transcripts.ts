@@ -65,8 +65,7 @@ export type SubagentTranscriptPartition = {
  * readdir the transcript's sibling directory, but their walk already enumerates
  * subagent paths — counting from the listing costs no extra round-trips.
  * Subagent transcripts share the parent sessionId and are not independently
- * resumable, so they are excluded from candidates (mirrors the local discovery
- * pruning in session-scanner-source-discovery.ts).
+ * resumable, so they are excluded from candidates.
  */
 export function partitionSubagentTranscriptPaths(
   paths: readonly string[]
