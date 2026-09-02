@@ -12,12 +12,7 @@ import {
   type NativeChatBlock,
   type NativeChatMessage
 } from '../../shared/native-chat-types'
-import {
-  asRecord,
-  extractString,
-  parseJsonObject,
-  timestampMs
-} from '../ai-vault/session-scanner-values'
+import { asRecord, extractString, parseJsonObject, timestampMs } from './transcript-value-parsing'
 import { toolResultOutput } from './transcript-record-blocks'
 
 /**

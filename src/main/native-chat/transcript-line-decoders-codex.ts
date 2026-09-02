@@ -5,12 +5,7 @@ import {
   type NativeChatBlock,
   type NativeChatMessage
 } from '../../shared/native-chat-types'
-import {
-  asRecord,
-  extractString,
-  parseJsonObject,
-  timestampMs
-} from '../ai-vault/session-scanner-values'
+import { asRecord, extractString, parseJsonObject, timestampMs } from './transcript-value-parsing'
 import { claudeContentBlocks, toolResultOutput } from './transcript-record-blocks'
 import { CODEX_EVENT_TURN_ABORTED } from './transcript-turn-markers'
 

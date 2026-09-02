@@ -5,12 +5,7 @@ import {
   type NativeChatBlock,
   type NativeChatMessage
 } from '../../shared/native-chat-types'
-import {
-  asRecord,
-  extractString,
-  parseJsonObject,
-  timestampMs
-} from '../ai-vault/session-scanner-values'
+import { asRecord, extractString, parseJsonObject, timestampMs } from './transcript-value-parsing'
 import { claudeContentBlocks } from './transcript-record-blocks'
 import { claudeInterruptedMessageId } from './transcript-turn-markers'
 

@@ -51,6 +51,12 @@ const MOBILE_STREAMING_CLEANUP_RPC_METHODS = [
   'terminal.unsubscribe'
 ]
 
+const MOBILE_DISABLED_RPC_METHODS = [
+  'aiVault.listSessions',
+  'aiVault.resolveSessionTitles',
+  'aiVault.prepareSessionResume'
+]
+
 function listSourceFiles(root: string): string[] {
   const entries = readdirSync(root)
   const files: string[] = []
@@ -91,7 +97,10 @@ function mobileLiteralRpcMethods(): string[] {
 }
 
 function mobileRpcMethods(): string[] {
-  return [...new Set([...mobileLiteralRpcMethods(), ...MOBILE_DYNAMIC_RPC_METHODS])].sort()
+  const disabled = new Set(MOBILE_DISABLED_RPC_METHODS)
+  return [...new Set([...mobileLiteralRpcMethods(), ...MOBILE_DYNAMIC_RPC_METHODS])]
+    .filter((method) => !disabled.has(method))
+    .sort()
 }
 
 function mobileRpcAllowlist(): Set<string> {
@@ -149,5 +158,12 @@ describe('mobile RPC allowlist', () => {
     expect(
       [...mobileRpcAllowlist()].filter((method) => method.startsWith('agentSession.'))
     ).toEqual([])
+  })
+
+  it('does not expose AI Vault to mobile credentials', () => {
+    const allowed = mobileRpcAllowlist()
+    const registered = registeredRuntimeMethods()
+    expect(MOBILE_DISABLED_RPC_METHODS.filter((method) => allowed.has(method))).toEqual([])
+    expect(MOBILE_DISABLED_RPC_METHODS.filter((method) => registered.has(method))).toEqual([])
   })
 })

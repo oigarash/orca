@@ -456,7 +456,7 @@ describe('registerCoreHandlers', () => {
     registerEmulatorVideoStreamHandlersMock.mockReset()
   })
 
-  it('passes the store through to handler registrars that need it', async () => {
+  it('passes the store through to handler registrars that need it', () => {
     const store = { marker: 'store' }
     const runtime = { marker: 'runtime', getAgentBrowserBridge: () => null }
     const stats = { marker: 'stats' }
@@ -468,7 +468,6 @@ describe('registerCoreHandlers', () => {
     const rateLimits = { marker: 'rateLimits' }
     const agentAwakeService = { marker: 'agentAwakeService' }
     const onBeforeRelaunch = vi.fn()
-    const getAdditionalAiVaultCodexHomePaths = vi.fn(() => ['/runtime/codex/home'])
 
     registerCoreHandlers(
       store as never,
@@ -486,16 +485,8 @@ describe('registerCoreHandlers', () => {
       agentAwakeService as never,
       undefined,
       undefined,
-      { getAdditionalAiVaultCodexHomePaths, onBeforeRelaunch }
+      { onBeforeRelaunch }
     )
-
-    const aiVaultOptions = registerAiVaultHandlersMock.mock.calls[0]?.[0]
-    expect(aiVaultOptions).toBeDefined()
-
-    callRuntimeEnvironmentMock.mockResolvedValueOnce({
-      ok: true,
-      result: { sessions: 'bad-shape' }
-    })
 
     expect(registerUsageProviderHandlersMock).toHaveBeenCalledWith({
       claudeUsage,
@@ -551,15 +542,7 @@ describe('registerCoreHandlers', () => {
     expect(registerRuntimeHandlersMock).toHaveBeenCalledWith(runtime)
     expect(registerRuntimeEnvironmentHandlersMock).toHaveBeenCalledWith(store)
     expect(registerEphemeralVmHandlersMock).toHaveBeenCalledWith(store, undefined)
-    expect(registerAiVaultHandlersMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        getAdditionalCodexHomePaths: getAdditionalAiVaultCodexHomePaths,
-        getActiveRuntimeAiVaultHostInfos: expect.any(Function),
-        scanRuntimeAiVaultSessions: expect.any(Function),
-        prepareRuntimeSessionResume: expect.any(Function)
-      })
-    )
-    expect(aiVaultOptions.getActiveRuntimeAiVaultHostInfos()).toEqual([])
+    expect(registerAiVaultHandlersMock).not.toHaveBeenCalled()
     expect(registerNativeChatHandlersMock).toHaveBeenCalled()
     expect(registerCliHandlersMock).toHaveBeenCalled()
     expect(registerPreflightHandlersMock).toHaveBeenCalled()
@@ -572,60 +555,6 @@ describe('registerCoreHandlers', () => {
     expect(registerBrowserHandlersMock).toHaveBeenCalled()
     expect(registerFilesystemWatcherHandlersMock).toHaveBeenCalled()
     expect(registerSpeechHandlersMock).toHaveBeenCalledWith(store)
-
-    await expect(
-      aiVaultOptions.scanRuntimeAiVaultSessions(
-        'env-123',
-        {
-          limit: 10,
-          scopePaths: ['/workspace']
-        },
-        { timeoutMs: 3000 }
-      )
-    ).resolves.toEqual({
-      sessions: [],
-      issues: [
-        expect.objectContaining({
-          executionHostId: 'runtime:env-123',
-          agent: 'codex',
-          path: 'env-123',
-          message: expect.stringContaining('Invalid aiVault.listSessions response')
-        })
-      ],
-      scannedAt: expect.any(String)
-    })
-    expect(callRuntimeEnvironmentMock).toHaveBeenCalledWith(
-      '/test/user-data',
-      'env-123',
-      'aiVault.listSessions',
-      {
-        limit: 10,
-        force: undefined,
-        scopePaths: ['/workspace'],
-        executionHostId: 'runtime:env-123'
-      },
-      3000
-    )
-
-    callRuntimeEnvironmentMock.mockResolvedValueOnce({
-      ok: true,
-      result: { useRealCodexHome: true }
-    })
-    const prepareArgs = {
-      agent: 'codex',
-      filePath: '/managed/sessions/2026/07/20/rollout-a.jsonl',
-      codexHome: '/managed',
-      executionHostId: 'runtime:env-123'
-    }
-    await expect(
-      aiVaultOptions.prepareRuntimeSessionResume('env-123', prepareArgs)
-    ).resolves.toEqual({ useRealCodexHome: true })
-    expect(callRuntimeEnvironmentMock).toHaveBeenLastCalledWith(
-      '/test/user-data',
-      'env-123',
-      'aiVault.prepareSessionResume',
-      prepareArgs
-    )
   })
 
   it('only registers IPC handlers once but always updates web contents id', () => {
