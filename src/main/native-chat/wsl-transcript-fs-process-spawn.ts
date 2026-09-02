@@ -1,14 +1,16 @@
 import { fork, type ChildProcess } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { pickAllowedEnv, RUNTIME_ENV_ALLOWLIST } from '../ai-vault/session-scanner-service-env'
+import {
+  pickAllowedEnv,
+  RUNTIME_ENV_ALLOWLIST
+} from '../../shared/child-process/runtime-environment-allowlist'
 
 const PROCESS_ENTRY_FILENAME = 'wsl-transcript-fs-process-entry.js'
 
 // Why: never `...process.env` into a forked transcript reader — an ambient
 // NODE_OPTIONS would halt (--inspect-brk) or --require code into every child,
-// and shell-exported secrets have no business in one. Shares the AI Vault
-// runtime allowlist: only what Node/libuv need to start.
+// and shell-exported secrets have no business in one.
 export function wslTranscriptFsProcessForkEnv(
   baseEnv: NodeJS.ProcessEnv = process.env,
   platform: NodeJS.Platform = process.platform
