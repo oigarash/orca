@@ -15,6 +15,7 @@ export function buildUpdateCardErrorModel({
   installError,
   compatibilityRelaunching,
   compatibilitySetupError,
+  notificationOnly = false,
   onChooseLocalBuild,
   onEnableHttp1Compatibility,
   onRetryDownload,
@@ -27,12 +28,16 @@ export function buildUpdateCardErrorModel({
   installError: string | null
   compatibilityRelaunching: boolean
   compatibilitySetupError: string | null
+  notificationOnly?: boolean
   onChooseLocalBuild: () => void
   onEnableHttp1Compatibility: () => void
   onRetryDownload: () => void
   onRecheck: () => void
   onInstallRetry: () => void
 }): UpdateErrorCardModel | null {
+  if (notificationOnly && status.state !== 'error') {
+    return null
+  }
   if (status.state !== 'error') {
     return installError
       ? {
@@ -46,6 +51,24 @@ export function buildUpdateCardErrorModel({
           }
         }
       : null
+  }
+  if (notificationOnly) {
+    return {
+      title: cachedVersion ? 'Update Available' : 'Update Check Failed',
+      summary: cachedVersion
+        ? 'Automatic download and installation are disabled for this custom build.'
+        : 'Could not check for updates.',
+      detail: status.message,
+      releaseUrl:
+        cachedVersion && !isLocalBuild ? getReleaseNotesUrlForVersion(cachedVersion) : undefined,
+      manualLabel: 'View Release',
+      primaryAction: cachedVersion
+        ? undefined
+        : {
+            label: translate('auto.components.UpdateCard.6b0085010d', 'Re-check'),
+            onClick: onRecheck
+          }
+    }
   }
   if (isLocalBuild) {
     return {
