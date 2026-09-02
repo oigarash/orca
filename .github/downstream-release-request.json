@@ -1,6 +1,6 @@
 {
-  "request_id": "2026-09-02-v1.4.194-release-20260902072405389-r9k27ri4wyp4e94h",
+  "request_id": "2026-09-02-v1.4.194-source-removal-dry-run-1",
   "upstream_ref": "v1.4.194",
-  "target_branch": "custom/v1.4.194",
-  "dry_run": false
+  "target_branch": "custom/v1.4.194-source-removal-dry-run",
+  "dry_run": true
 }
