@@ -1,6 +1,6 @@
 {
-  "request_id": "2026-09-02-v1.4.194-dry-run-20260902071954358-4yfxnp8jzxggnxbc",
+  "request_id": "2026-09-02-v1.4.194-release-20260902072405389-r9k27ri4wyp4e94h",
   "upstream_ref": "v1.4.194",
   "target_branch": "custom/v1.4.194",
-  "dry_run": true
+  "dry_run": false
 }
