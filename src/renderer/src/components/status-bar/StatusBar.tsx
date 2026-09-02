@@ -9,7 +9,8 @@ import {
   Loader2,
   PanelsTopLeft,
   RefreshCw,
-  Server
+  Server,
+  Keyboard
 } from 'lucide-react'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { lazyWithRetry } from '@/lib/lazy-with-retry'
@@ -72,6 +73,7 @@ import {
 import { UpdateStatusSegment } from './UpdateStatusSegment'
 import { SkillUpdateStatusSegment } from './SkillUpdateStatusSegment'
 import { CaffeinateStatusSegment } from './CaffeinateStatusSegment'
+import { InputMethodStatusSegment } from './InputMethodStatusSegment'
 import { RemoteServerUpdateStatusSegment } from './RemoteServerUpdateStatusSegment'
 import { isStatusBarItemAvailable } from './status-bar-agent-gating'
 import { getVisibleUsageProvider, isUsageEmptyState } from './status-bar-provider-visibility'
@@ -2028,6 +2030,8 @@ function StatusBarInner({ floatingTerminalOpen }: StatusBarProps): React.JSX.Ele
   const usageMenuFocusHandoff = useStatusBarMenuFocusHandoff()
   const statusBarVisible = useAppStore((s) => s.statusBarVisible)
   const statusBarItems = useAppStore((s) => s.statusBarItems)
+  const inputMethodStatusVisible = useAppStore((s) => s.inputMethodStatusVisible)
+  const setInputMethodStatusVisible = useAppStore((s) => s.setInputMethodStatusVisible)
   const recordFeatureInteraction = useAppStore((s) => s.recordFeatureInteraction)
   // Why: reuse the floating-button's unread dot so activity shows for either trigger location (see FloatingTerminalToggleButton).
   const hasFloatingUnread = useAppStore(selectFloatingWorkspaceHasUnread)
@@ -2192,6 +2196,10 @@ function StatusBarInner({ floatingTerminalOpen }: StatusBarProps): React.JSX.Ele
 
   const compact = containerWidth < 900
   const iconOnly = containerWidth < 500
+  const inputMethodStatusSupported =
+    !isPairedWebClientWindow() &&
+    (getRendererAppPlatform() === 'darwin' || getRendererAppPlatform() === 'win32')
+  const showInputMethodStatus = inputMethodStatusSupported && inputMethodStatusVisible
   const floatingTerminalActionLabel = floatingTerminalOpen
     ? 'Minimize Floating Workspace'
     : 'Show Floating Workspace'
@@ -2390,6 +2398,7 @@ function StatusBarInner({ floatingTerminalOpen }: StatusBarProps): React.JSX.Ele
       <div className="flex-1" />
 
       <div className="flex items-center gap-3">
+        {showInputMethodStatus ? <InputMethodStatusSegment /> : null}
         {!isPairedWebClientWindow() ? <CaffeinateStatusSegment iconOnly={iconOnly} /> : null}
         <RemoteServerUpdateStatusSegment iconOnly={iconOnly} />
         <SkillUpdateStatusSegment iconOnly={iconOnly} />
@@ -2546,6 +2555,15 @@ function StatusBarInner({ floatingTerminalOpen }: StatusBarProps): React.JSX.Ele
               {translate('auto.components.status.bar.StatusBar.grokUsageMenu', 'Grok Usage')}
             </DropdownMenuCheckboxItem>
           )}
+          {inputMethodStatusSupported ? (
+            <DropdownMenuCheckboxItem
+              checked={inputMethodStatusVisible}
+              onCheckedChange={() => setInputMethodStatusVisible(!inputMethodStatusVisible)}
+            >
+              <Keyboard className="size-3.5" />
+              {translate('auto.components.status.bar.StatusBar.inputMethodStatus', 'Input Method')}
+            </DropdownMenuCheckboxItem>
+          ) : null}
           <DropdownMenuCheckboxItem
             checked={statusBarItems.includes('ssh')}
             onCheckedChange={() => {

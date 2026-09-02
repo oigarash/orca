@@ -969,6 +969,8 @@ export type UISlice = {
   toggleStatusBarItem: (item: StatusBarItem) => void
   statusBarVisible: boolean
   setStatusBarVisible: (v: boolean) => void
+  inputMethodStatusVisible: boolean
+  setInputMethodStatusVisible: (visible: boolean) => void
   usagePercentageDisplay: UsagePercentageDisplay
   setUsagePercentageDisplay: (display: UsagePercentageDisplay) => void
   statusBarUsageMode: StatusBarUsageMode
@@ -2322,6 +2324,11 @@ export const createUISlice: StateCreator<AppState, [], [], UISlice> = (set, get)
     window.api.ui.set({ statusBarVisible: v }).catch(console.error)
     set({ statusBarVisible: v })
   },
+  inputMethodStatusVisible: true,
+  setInputMethodStatusVisible: (visible) => {
+    window.api.ui.set({ inputMethodStatusVisible: visible }).catch(console.error)
+    set({ inputMethodStatusVisible: visible })
+  },
   usagePercentageDisplay: DEFAULT_USAGE_PERCENTAGE_DISPLAY,
   setUsagePercentageDisplay: (display) => {
     const normalized = normalizeUsagePercentageDisplay(display)
@@ -2666,6 +2673,7 @@ export const createUISlice: StateCreator<AppState, [], [], UISlice> = (set, get)
         syncTaskStatusFromWorkspaceBoard: ui.syncTaskStatusFromWorkspaceBoard === true,
         statusBarItems: statusBarItemsWithGrok,
         statusBarVisible: ui.statusBarVisible ?? true,
+        inputMethodStatusVisible: ui.inputMethodStatusVisible !== false,
         usagePercentageDisplay: normalizeUsagePercentageDisplay(ui.usagePercentageDisplay),
         statusBarUsageMode: normalizeStatusBarUsageMode(ui.statusBarUsageMode),
         // Why: default true so existing users see the pet on first enabling the flag; only an explicit Hide persists false.

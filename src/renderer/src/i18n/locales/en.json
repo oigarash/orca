@@ -132,7 +132,8 @@
         "resourceUsageToggleDescription": "Show the Resource Manager. Click it for CPU, memory, sessions, daemon controls, and workspace disk scans.",
         "portsToggleDescription": "Show live workspace ports. Click it for workspace-scoped ports and external listeners.",
         "antigravityToggleDescription": "Show Antigravity subscription usage for the active workspace.",
-        "grokToggleDescription": "Show Grok subscription credit usage when signed in via Grok CLI."
+        "grokToggleDescription": "Show Grok subscription credit usage when signed in via Grok CLI.",
+        "inputMethodToggleDescription": "Show IM: あ for Japanese input and IM: A for alphanumeric input."
       },
       "menuBarIcon": {
         "title": "Show Menu Bar Icon",
@@ -3652,7 +3653,8 @@
             "grokUsageMenu": "Grok Usage",
             "floatingTerminalNewActivity": "{{label}}, new activity",
             "codexSignInSuccess": "Signed in to Codex",
-            "codexSignInError": "Codex sign-in failed. Please try again."
+            "codexSignInError": "Codex sign-in failed. Please try again.",
+            "inputMethodStatus": "Input Method"
           },
           "StatusBarUsageEmptyCta": {
             "828c764a79": "Connect an account",
@@ -3913,6 +3915,10 @@
             "contact_note": "The host may still be running; only the Orca connection is unavailable.",
             "last_connected": "Last connected {{value0}}",
             "reconnect_attempt": "Attempt {{value0}}"
+          },
+          "InputMethodStatusSegment": {
+            "active": "Input method: Japanese input",
+            "inactive": "Input method: alphanumeric input"
           }
         }
       },
@@ -8969,7 +8975,9 @@
             "d6c0a9e2f4": "grok",
             "c5b9f8d1e3": "xai",
             "usagePercentageDisplayTitle": "Usage percentages",
-            "usagePercentageDisplayDescription": "Choose whether provider limits show the percentage used or remaining."
+            "usagePercentageDisplayDescription": "Choose whether provider limits show the percentage used or remaining.",
+            "inputMethodStatusTitle": "Input Method",
+            "inputMethodStatusDescription": "Show the current keyboard input method in the status bar."
           }
         },
         "auto": {

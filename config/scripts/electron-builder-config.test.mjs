@@ -150,6 +150,10 @@ describe('electron-builder config', () => {
         expect.objectContaining({
           from: 'native/windows-cli-launcher/.build/orca.exe',
           to: 'bin/orca.exe'
+        }),
+        expect.objectContaining({
+          from: 'native/input-method-windows/.build/orca-input-method-state.exe',
+          to: 'input-method/orca-input-method-state.exe'
         })
       ])
     )

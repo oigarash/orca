@@ -67,6 +67,7 @@ export function mergeHostWebUIState(
   const pinned = {
     automationHostFilter: local.automationHostFilter,
     hideWorkspacesFromOtherDevices: local.hideWorkspacesFromOtherDevices === true,
+    inputMethodStatusVisible: local.inputMethodStatusVisible !== false,
     manualRepoOrder: local.manualRepoOrder,
     workspaceHostOrder: local.workspaceHostOrder
   } satisfies Record<PairingLocalUiField, unknown> & Partial<PersistedUIState>

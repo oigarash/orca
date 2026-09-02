@@ -14,6 +14,10 @@ function runElectronBuilderNativeRebuild(context, runner = execFileSync, runtime
       cwd: projectDir,
       stdio: 'inherit'
     })
+    runner(process.execPath, ['config/scripts/build-windows-input-method-state.mjs'], {
+      cwd: projectDir,
+      stdio: 'inherit'
+    })
   }
   runner(process.execPath, args, {
     cwd: projectDir,
