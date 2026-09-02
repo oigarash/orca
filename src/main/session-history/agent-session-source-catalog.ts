@@ -3,17 +3,24 @@ import { basename, dirname, extname, join, relative } from 'node:path'
 import type { AiVaultAgent } from '../../shared/ai-vault-types'
 import type { AiVaultDeletableAgent } from '../../shared/ai-vault-session-deletion'
 import { resolveGrokSessionsDir } from '../../shared/grok-session-paths'
-import { uniqueCodexSessionsDirs } from './session-scanner-codex-paths'
+import { uniqueCodexSessionsDirs } from '../ai-vault/session-scanner-codex-paths'
 import {
   clineMessagesPathForMetadata,
   isClineSessionMetadataPath
-} from './session-scanner-cline-parser'
-import { resolveKimiSessionsDir } from './session-scanner-kimi-paths'
-import { OMP_SESSION_ARTIFACT_DIR_PATTERN } from './session-scanner-omp-subagent-transcripts'
-import { claudeProjectsRootDirs, OMP_SESSIONS_DIR, sessionRootDirs } from './session-scanner-roots'
-import { SUBAGENT_DIR_NAME } from './session-scanner-subagent-transcripts'
-import type { AiVaultScanOptions } from './session-scanner-types'
-import { normalizeAgentSessionsDir, primeAgentSessionsDirFromEnv } from './session-scanner-values'
+} from '../ai-vault/session-scanner-cline-parser'
+import { resolveKimiSessionsDir } from '../ai-vault/session-scanner-kimi-paths'
+import { OMP_SESSION_ARTIFACT_DIR_PATTERN } from '../ai-vault/session-scanner-omp-subagent-transcripts'
+import {
+  claudeProjectsRootDirs,
+  OMP_SESSIONS_DIR,
+  sessionRootDirs
+} from '../ai-vault/session-scanner-roots'
+import { SUBAGENT_DIR_NAME } from '../ai-vault/session-scanner-subagent-transcripts'
+import type { AiVaultScanOptions } from '../ai-vault/session-scanner-types'
+import {
+  normalizeAgentSessionsDir,
+  primeAgentSessionsDirFromEnv
+} from '../ai-vault/session-scanner-values'
 
 export const DEFAULT_CODEX_HOME_DIR = join(homedir(), '.codex')
 const CODEX_SESSIONS_DIR = join(
@@ -54,7 +61,7 @@ const CLINE_SESSIONS_DIR =
  * only paths this same shape would have surfaced. Both read this one table, so
  * "deletable" and "discoverable" cannot drift apart.
  */
-export type AiVaultAgentSource = {
+export type AgentSessionSource = {
   // A function, not a value: grok resolves its root lazily because a
   // module-scope call binds across chunks at init time and breaks on bundle
   // ordering. Returns the local host root plus one per WSL distro home.
@@ -73,12 +80,12 @@ export type AiVaultAgentSource = {
 // Every deletable agent needs an entry — the delete validator derives its roots
 // and its accept rule from this table alone, so adding an agent to
 // AI_VAULT_DELETABLE_AGENTS without a source here is a type error.
-type AiVaultAgentSourceTable = Record<AiVaultDeletableAgent, AiVaultAgentSource> &
-  Partial<Record<AiVaultAgent, AiVaultAgentSource>>
+type AgentSessionSourceTable = Record<AiVaultDeletableAgent, AgentSessionSource> &
+  Partial<Record<AiVaultAgent, AgentSessionSource>>
 
 // Agents absent from this table are discovered by shape-specific scanners
 // instead: opencode (SQLite plus legacy files) and antigravity (brain dirs).
-export const AI_VAULT_AGENT_SOURCES: AiVaultAgentSourceTable = {
+export const AGENT_SESSION_SOURCES: AgentSessionSourceTable = {
   claude: {
     rootDirs: (options, wslHomeDirs) =>
       claudeProjectsRootDirs({ claudeProjectsDir: options.claudeProjectsDir, wslHomeDirs }),
@@ -262,8 +269,8 @@ export const AI_VAULT_AGENT_SOURCES: AiVaultAgentSourceTable = {
  * predicate. This is the delete validator's accept rule, so a path no scan
  * would ever list can't become a delete target either.
  */
-export function isDiscoverableSessionFile(
-  source: AiVaultAgentSource,
+export function isDiscoverableAgentSessionFile(
+  source: AgentSessionSource,
   rootDir: string,
   filePath: string
 ): boolean {
