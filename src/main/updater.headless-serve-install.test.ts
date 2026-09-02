@@ -508,6 +508,19 @@ describe('headless serve update install handoff', () => {
     )
   })
 
+  it('disables desktop quit-time installation in notification-only mode', async () => {
+    const { setupAutoUpdater } = await import('./updater')
+
+    setupAutoUpdater({ webContents: { send: vi.fn() } } as never, {
+      getLastUpdateCheckAt: () => Date.now(),
+      installMode: 'interactive',
+      notificationOnly: true
+    })
+
+    expect(autoUpdaterMock.autoInstallOnAppQuit).toBe(false)
+    expect(autoUpdaterMock.autoRunAppAfterInstall).toBe(false)
+  })
+
   it('advertises remote update control only for safely restartable installs', async () => {
     const { checkForRemoteServerUpdate, getRemoteServerUpdateSupport, setupAutoUpdater } =
       await loadUpdaterModule()

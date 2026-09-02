@@ -20,6 +20,7 @@ import { recordUpdaterLifecycle } from '../updater-lifecycle-diagnostics'
 import { AUTO_UPDATE_CHECK_INTERVAL_MS } from './updater-state'
 import { UpdaterDownloadInstall } from './updater-download-install'
 import type { UpdateInstallMode } from './updater-state'
+import { shouldAllowUpdaterInstallation } from '../../shared/local-updater-policy'
 
 export type UpdaterSetupOptions = {
   getLastUpdateCheckAt?: () => number | null
@@ -31,6 +32,7 @@ export type UpdaterSetupOptions = {
   setDismissedUpdateNudgeId?: (id: string | null) => void
   getReleaseChannelOverride?: () => ReleaseChannel | null
   installMode?: UpdateInstallMode
+  notificationOnly?: boolean
 }
 
 /** Initializes electron-updater and attaches lifecycle/event bridges. */
@@ -137,6 +139,10 @@ export class UpdaterSetup extends UpdaterDownloadInstall {
     }
 
     const autoUpdater = this.getAutoUpdater()
+    const allowInstallation = shouldAllowUpdaterInstallation(
+      opts?.notificationOnly === true,
+      this.updateInstallMode
+    )
     autoUpdater.autoDownload = false
     if (this.activeUpdateSource === 'release') {
       autoUpdater.allowDowngrade = false
@@ -145,9 +151,12 @@ export class UpdaterSetup extends UpdaterDownloadInstall {
     // Why: supervised serve installs require an explicit handoff; ordinary service quits must never install implicitly.
     // Root Linux packages also opt out: an implicit quit-time escalation would fail after the UI is gone, leaving no recovery surface.
     autoUpdater.autoInstallOnAppQuit =
-      this.updateInstallMode === 'interactive' && getLinuxRootPackageType() === null
+      allowInstallation &&
+      this.updateInstallMode === 'interactive' &&
+      getLinuxRootPackageType() === null
     // Why: MacUpdater ignores quitAndInstall arguments; the surviving CLI supervisor must be the only serve relaunch owner.
-    autoUpdater.autoRunAppAfterInstall = this.updateInstallMode === 'interactive'
+    autoUpdater.autoRunAppAfterInstall =
+      allowInstallation && this.updateInstallMode === 'interactive'
     // Why: our only on-machine window into electron-updater; otherwise an unexpected update-not-available or failed fetch is invisible.
     autoUpdater.logger = createUpdaterDiagnosticLogger() as never
 

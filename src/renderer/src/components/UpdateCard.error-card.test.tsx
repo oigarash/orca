@@ -6,6 +6,12 @@ import type { LinuxPackageInstallRecovery } from '../../../shared/update-status-
 import { useAppStore } from '../store'
 import { UpdateCard } from './UpdateCard'
 
+// These tests cover Orca's standard updater branches. The custom build's notification-only
+// behavior has a dedicated test so legacy recovery and security cases remain independently tested.
+vi.mock('../../../shared/local-updater-policy', () => ({
+  LOCAL_UPDATER_NOTIFICATION_ONLY: false
+}))
+
 const openUrl = vi.fn()
 const download = vi.fn()
 const check = vi.fn()

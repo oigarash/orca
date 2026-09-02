@@ -7,12 +7,16 @@ const {
   handleMock,
   removeHandlerMock,
   isTrustedUIRendererMock,
+  downloadUpdateMock,
+  quitAndInstallMock,
   getLinuxPackageInstallInstructionsMock,
   showLinuxPackageMock
 } = vi.hoisted(() => ({
   handleMock: vi.fn(),
   removeHandlerMock: vi.fn(),
   isTrustedUIRendererMock: vi.fn<(sender: unknown) => boolean>(() => true),
+  downloadUpdateMock: vi.fn(),
+  quitAndInstallMock: vi.fn(),
   getLinuxPackageInstallInstructionsMock: vi.fn(),
   showLinuxPackageMock: vi.fn()
 }))
@@ -49,9 +53,9 @@ vi.mock('../macos-tcc-prompt-notice', () => ({
 vi.mock('../updater', () => ({
   checkForUpdates: vi.fn(),
   checkForUpdatesFromMenu: vi.fn(),
-  downloadUpdate: vi.fn(),
+  downloadUpdate: downloadUpdateMock,
   getUpdateStatus: vi.fn(),
-  quitAndInstall: vi.fn(),
+  quitAndInstall: quitAndInstallMock,
   dismissNudge: vi.fn(),
   dismissAvailableUpdate: vi.fn(),
   setupAutoUpdater: vi.fn(),
@@ -126,6 +130,8 @@ describe('updater linux package recovery IPC handlers', () => {
       .mockReset()
       .mockImplementation((sender) => actualUi.isTrustedUIRenderer(sender as WebContents))
     actualUi.setTrustedUIRendererWebContentsId(TRUSTED_ID)
+    downloadUpdateMock.mockReset()
+    quitAndInstallMock.mockReset()
     getLinuxPackageInstallInstructionsMock
       .mockReset()
       .mockResolvedValue({ ok: true, command: "sudo apt install -- '<pkg>'", packageFileName: 'p' })
@@ -142,6 +148,14 @@ describe('updater linux package recovery IPC handlers', () => {
       expect(removeHandlerMock).toHaveBeenCalledWith(channel)
       expect(handleMock.mock.calls.filter(([name]) => name === channel)).toHaveLength(1)
     }
+  })
+
+  it('keeps local download and restart-install IPC notification-only', () => {
+    getHandler('updater:download')({} as IpcMainInvokeEvent)
+    getHandler('updater:quitAndInstall')({} as IpcMainInvokeEvent)
+
+    expect(downloadUpdateMock).not.toHaveBeenCalled()
+    expect(quitAndInstallMock).not.toHaveBeenCalled()
   })
 
   it('routes both channels through the trusted-renderer guard', () => {

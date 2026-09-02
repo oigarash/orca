@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import type { ChangelogData } from '../../../shared/update-status-types'
+import { LOCAL_UPDATER_NOTIFICATION_ONLY } from '../../../shared/local-updater-policy'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { useAppStore } from '../store'
 import { Card } from './ui/card'
@@ -80,7 +81,11 @@ export function UpdateCard(): React.JSX.Element | null {
     return () => window.clearTimeout(timer)
   }, [shouldAutoDismissLatest])
   useEffect(() => {
-    if (status.state === 'downloaded' && hasStartedDownload.current) {
+    if (
+      !LOCAL_UPDATER_NOTIFICATION_ONLY &&
+      status.state === 'downloaded' &&
+      hasStartedDownload.current
+    ) {
       void window.api.updater.quitAndInstall().catch((error) => {
         setInstallError(String((error as Error)?.message ?? error))
       })
@@ -123,6 +128,9 @@ export function UpdateCard(): React.JSX.Element | null {
   }
 
   const handleUpdate = (): void => {
+    if (LOCAL_UPDATER_NOTIFICATION_ONLY) {
+      return
+    }
     hasStartedDownload.current = true
     if (!reassuranceSeen) {
       markReassuranceSeen()
@@ -140,6 +148,9 @@ export function UpdateCard(): React.JSX.Element | null {
     dismissUpdate()
   }
   const handleInstallRetry = (): void => {
+    if (LOCAL_UPDATER_NOTIFICATION_ONLY) {
+      return
+    }
     void window.api.updater.quitAndInstall().catch((error) => {
       setInstallError(String((error as Error)?.message ?? error))
     })
@@ -167,6 +178,7 @@ export function UpdateCard(): React.JSX.Element | null {
     installError,
     compatibilityRelaunching,
     compatibilitySetupError,
+    notificationOnly: LOCAL_UPDATER_NOTIFICATION_ONLY,
     onChooseLocalBuild: () => void window.api.updater.check({ localBuild: true }),
     onEnableHttp1Compatibility: handleEnableHttp1Compatibility,
     onRetryDownload: handleUpdate,
@@ -174,7 +186,9 @@ export function UpdateCard(): React.JSX.Element | null {
     onInstallRetry: handleInstallRetry
   })
   const linuxPackageRecovery =
-    status.state === 'error' && status.recovery?.kind === 'linux-package-install'
+    !LOCAL_UPDATER_NOTIFICATION_ONLY &&
+    status.state === 'error' &&
+    status.recovery?.kind === 'linux-package-install'
       ? { recovery: status.recovery, diagnostic: status.message }
       : null
 
@@ -226,6 +240,7 @@ export function UpdateCard(): React.JSX.Element | null {
   const cardContent = (
     <UpdateCardStateContent
       status={status}
+      notificationOnly={LOCAL_UPDATER_NOTIFICATION_ONLY}
       changelog={changelog}
       errorCard={errorCard}
       linuxPackageRecovery={linuxPackageRecovery}
@@ -250,7 +265,9 @@ export function UpdateCard(): React.JSX.Element | null {
       ? 'animate-update-card-exit'
       : 'animate-update-card-enter'
   const showReassurance =
-    !reassuranceSeen && (status.state === 'available' || status.state === 'downloading')
+    !LOCAL_UPDATER_NOTIFICATION_ONLY &&
+    !reassuranceSeen &&
+    (status.state === 'available' || status.state === 'downloading')
   return (
     <div
       ref={cardRootRef}
