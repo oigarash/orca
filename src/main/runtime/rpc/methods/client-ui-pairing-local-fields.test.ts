@@ -41,6 +41,7 @@ describe('client UI RPC pairing-local field seams', () => {
   const pairingLocalSamples: Record<(typeof PAIRING_LOCAL_UI_FIELDS)[number], unknown> = {
     automationHostFilter: { kind: 'host', hostKey: 'authority:desktop|selector:self' },
     hideWorkspacesFromOtherDevices: true,
+    inputMethodFloatingIndicatorVisible: true,
     inputMethodStatusVisible: true,
     manualRepoOrder: [
       { hostId: 'runtime:web-11111111-2222-3333-4444-555555555555', repoId: 'repo-a' }

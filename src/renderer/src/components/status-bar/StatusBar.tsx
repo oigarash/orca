@@ -2030,6 +2030,12 @@ function StatusBarInner({ floatingTerminalOpen }: StatusBarProps): React.JSX.Ele
   const usageMenuFocusHandoff = useStatusBarMenuFocusHandoff()
   const statusBarVisible = useAppStore((s) => s.statusBarVisible)
   const statusBarItems = useAppStore((s) => s.statusBarItems)
+  const inputMethodFloatingIndicatorVisible = useAppStore(
+    (s) => s.inputMethodFloatingIndicatorVisible
+  )
+  const setInputMethodFloatingIndicatorVisible = useAppStore(
+    (s) => s.setInputMethodFloatingIndicatorVisible
+  )
   const inputMethodStatusVisible = useAppStore((s) => s.inputMethodStatusVisible)
   const setInputMethodStatusVisible = useAppStore((s) => s.setInputMethodStatusVisible)
   const recordFeatureInteraction = useAppStore((s) => s.recordFeatureInteraction)
@@ -2398,7 +2404,12 @@ function StatusBarInner({ floatingTerminalOpen }: StatusBarProps): React.JSX.Ele
       <div className="flex-1" />
 
       <div className="flex items-center gap-3">
-        {showInputMethodStatus ? <InputMethodStatusSegment /> : null}
+        {showInputMethodStatus ? (
+          <InputMethodStatusSegment
+            floatingIndicatorVisible={inputMethodFloatingIndicatorVisible}
+            onFloatingIndicatorVisibleChange={setInputMethodFloatingIndicatorVisible}
+          />
+        ) : null}
         {!isPairedWebClientWindow() ? <CaffeinateStatusSegment iconOnly={iconOnly} /> : null}
         <RemoteServerUpdateStatusSegment iconOnly={iconOnly} />
         <SkillUpdateStatusSegment iconOnly={iconOnly} />

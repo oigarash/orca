@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 
 import { act } from 'react'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { InputMethodStatusSegment } from './InputMethodStatusSegment'
 import type { InputMethodState } from '../../../../shared/input-method-state'
@@ -41,10 +41,21 @@ afterEach(() => {
 })
 
 describe('InputMethodStatusSegment', () => {
+  const renderSegment = (
+    floatingIndicatorVisible = false,
+    onFloatingIndicatorVisibleChange = vi.fn()
+  ): ReturnType<typeof render> =>
+    render(
+      <InputMethodStatusSegment
+        floatingIndicatorVisible={floatingIndicatorVisible}
+        onFloatingIndicatorVisibleChange={onFloatingIndicatorVisibleChange}
+      />
+    )
+
   it('renders the native-language marker for an active input method', async () => {
     installInputMethodApi(Promise.resolve('active'))
 
-    render(<InputMethodStatusSegment />)
+    renderSegment()
 
     expect((await screen.findByText('IM: あ')).getAttribute('aria-label')).toBe(
       'Input method: Japanese input'
@@ -54,7 +65,7 @@ describe('InputMethodStatusSegment', () => {
   it('renders the alphanumeric marker for an inactive input method', async () => {
     installInputMethodApi(Promise.resolve('inactive'))
 
-    render(<InputMethodStatusSegment />)
+    renderSegment()
 
     expect((await screen.findByText('IM: A')).getAttribute('aria-label')).toBe(
       'Input method: alphanumeric input'
@@ -64,7 +75,7 @@ describe('InputMethodStatusSegment', () => {
   it('stays hidden for an unknown state', async () => {
     installInputMethodApi(Promise.resolve('unknown'))
 
-    const { container } = render(<InputMethodStatusSegment />)
+    const { container } = renderSegment()
     await act(async () => {})
 
     expect(container.innerHTML).toBe('')
@@ -72,7 +83,7 @@ describe('InputMethodStatusSegment', () => {
 
   it('follows change events and unsubscribes on unmount', async () => {
     const api = installInputMethodApi(Promise.resolve('inactive'))
-    const { unmount } = render(<InputMethodStatusSegment />)
+    const { unmount } = renderSegment()
     await screen.findByText('IM: A')
 
     act(() => api.emit('active'))
@@ -88,7 +99,7 @@ describe('InputMethodStatusSegment', () => {
       resolveInitial = resolve
     })
     const api = installInputMethodApi(initialState)
-    render(<InputMethodStatusSegment />)
+    renderSegment()
 
     act(() => api.emit('active'))
     expect(screen.queryByText('IM: あ')).not.toBeNull()
@@ -96,5 +107,26 @@ describe('InputMethodStatusSegment', () => {
     resolveInitial('inactive')
     await waitFor(() => expect(screen.queryByText('IM: A')).toBeNull())
     expect(screen.queryByText('IM: あ')).not.toBeNull()
+  })
+
+  it('opens the floating-indicator menu on click', async () => {
+    const setFloatingIndicatorVisible = vi.fn()
+    installInputMethodApi(Promise.resolve('inactive'))
+    renderSegment(false, setFloatingIndicatorVisible)
+
+    fireEvent.pointerDown(
+      await screen.findByRole('button', { name: 'Input method: alphanumeric input' }),
+      {
+        button: 0,
+        ctrlKey: false
+      }
+    )
+    const item = await screen.findByRole('menuitemcheckbox', {
+      name: 'Floating IM Indicator'
+    })
+    expect(item.getAttribute('aria-checked')).toBe('false')
+
+    fireEvent.click(item)
+    expect(setFloatingIndicatorVisible).toHaveBeenCalledWith(true)
   })
 })

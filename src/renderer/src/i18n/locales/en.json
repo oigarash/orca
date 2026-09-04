@@ -3918,7 +3918,9 @@
           },
           "InputMethodStatusSegment": {
             "active": "Input method: Japanese input",
-            "inactive": "Input method: alphanumeric input"
+            "inactive": "Input method: alphanumeric input",
+            "floatingIndicator": "Floating IM Indicator",
+            "floatingIndicatorOptions": "{{status}}. Floating indicator options"
           }
         }
       },

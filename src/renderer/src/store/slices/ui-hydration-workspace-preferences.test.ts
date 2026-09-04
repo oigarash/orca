@@ -198,24 +198,36 @@ describe('createUISlice hydratePersistedUI', () => {
     expect(store.getState().usagePercentageDisplay).toBe('remaining')
   })
 
-  it('persists the client-local input method status preference and defaults missing values on', () => {
+  it('persists client-local input method preferences with safe defaults', () => {
     const setUI = vi.fn().mockResolvedValue(undefined)
     vi.stubGlobal('window', { api: { ui: { set: setUI } } })
     const store = createUIStore()
 
     expect(store.getState().inputMethodStatusVisible).toBe(true)
+    expect(store.getState().inputMethodFloatingIndicatorVisible).toBe(false)
     store.getState().setInputMethodStatusVisible(false)
+    store.getState().setInputMethodFloatingIndicatorVisible(true)
 
     expect(store.getState().inputMethodStatusVisible).toBe(false)
     expect(setUI).toHaveBeenCalledWith({ inputMethodStatusVisible: false })
+    expect(store.getState().inputMethodFloatingIndicatorVisible).toBe(true)
+    expect(setUI).toHaveBeenCalledWith({ inputMethodFloatingIndicatorVisible: true })
 
-    store.getState().hydratePersistedUI(makePersistedUI({ inputMethodStatusVisible: false }))
+    store.getState().hydratePersistedUI(
+      makePersistedUI({
+        inputMethodFloatingIndicatorVisible: true,
+        inputMethodStatusVisible: false
+      })
+    )
     expect(store.getState().inputMethodStatusVisible).toBe(false)
+    expect(store.getState().inputMethodFloatingIndicatorVisible).toBe(true)
 
     const withoutPreference = makePersistedUI()
+    delete withoutPreference.inputMethodFloatingIndicatorVisible
     delete withoutPreference.inputMethodStatusVisible
     store.getState().hydratePersistedUI(withoutPreference)
     expect(store.getState().inputMethodStatusVisible).toBe(true)
+    expect(store.getState().inputMethodFloatingIndicatorVisible).toBe(false)
   })
 
   it('hydrates and dismisses the usage percentage display change notice', () => {

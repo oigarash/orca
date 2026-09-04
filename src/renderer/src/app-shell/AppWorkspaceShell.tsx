@@ -5,6 +5,7 @@ import Sidebar from '../components/Sidebar'
 import RightSidebar from '../components/right-sidebar'
 import { RecoverableRenderErrorBoundary } from '../components/error-boundaries/RecoverableRenderErrorBoundary'
 import { FloatingTerminalToggleButton } from '../components/floating-terminal/FloatingTerminalToggleButton'
+import { FloatingInputMethodIndicator } from '../components/input-method/FloatingInputMethodIndicator'
 import { TerminalWorkbenchContainer } from '../components/TerminalWorkbenchContainer'
 import type { VirtualizedScrollAnchor } from '../hooks/useVirtualizedScrollAnchor'
 import { TitlebarLeftControls } from './TitlebarLeftControls'
@@ -220,6 +221,7 @@ export function AppWorkspaceShell(props: {
                     onToggle={() => floatingWorkspace.setOpenWithFocus((open) => !open)}
                   />
                 ) : null}
+                <FloatingInputMethodIndicator />
               </div>
             </div>
           </div>
