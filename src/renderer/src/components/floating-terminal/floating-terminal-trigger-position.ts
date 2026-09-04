@@ -1,6 +1,6 @@
-const TRIGGER_SIZE = 36
-const DEFAULT_RIGHT_GAP = 24
-const DEFAULT_BOTTOM_GAP = 72
+export const FLOATING_TERMINAL_TRIGGER_SIZE = 36
+export const FLOATING_TERMINAL_TRIGGER_DEFAULT_RIGHT_GAP = 24
+export const FLOATING_TERMINAL_TRIGGER_DEFAULT_BOTTOM_GAP = 72
 const DRAG_MARGIN = 8
 const TITLEBAR_SAFE_TOP = 36
 
@@ -63,8 +63,8 @@ export function getDefaultFloatingTerminalTriggerCommittedPosition(): FloatingTe
   return {
     anchorX: 'right',
     anchorY: 'bottom',
-    offsetX: DEFAULT_RIGHT_GAP,
-    offsetY: DEFAULT_BOTTOM_GAP
+    offsetX: FLOATING_TERMINAL_TRIGGER_DEFAULT_RIGHT_GAP,
+    offsetY: FLOATING_TERMINAL_TRIGGER_DEFAULT_BOTTOM_GAP
   }
 }
 
@@ -80,8 +80,14 @@ export function clampFloatingTerminalTriggerPosition(
   position: FloatingTerminalTriggerPosition
 ): FloatingTerminalTriggerPosition {
   const viewport = getViewport()
-  const maxLeft = Math.max(DRAG_MARGIN, viewport.width - TRIGGER_SIZE - DRAG_MARGIN)
-  const maxTop = Math.max(TITLEBAR_SAFE_TOP, viewport.height - TRIGGER_SIZE - DRAG_MARGIN)
+  const maxLeft = Math.max(
+    DRAG_MARGIN,
+    viewport.width - FLOATING_TERMINAL_TRIGGER_SIZE - DRAG_MARGIN
+  )
+  const maxTop = Math.max(
+    TITLEBAR_SAFE_TOP,
+    viewport.height - FLOATING_TERMINAL_TRIGGER_SIZE - DRAG_MARGIN
+  )
   return {
     left: Math.min(Math.max(DRAG_MARGIN, position.left), maxLeft),
     top: Math.min(Math.max(TITLEBAR_SAFE_TOP, position.top), maxTop)
@@ -91,8 +97,8 @@ export function clampFloatingTerminalTriggerPosition(
 export function hasUsableFloatingTerminalTriggerViewport(): boolean {
   const viewport = getViewport()
   return (
-    viewport.width >= TRIGGER_SIZE + DRAG_MARGIN * 2 &&
-    viewport.height >= TRIGGER_SIZE + TITLEBAR_SAFE_TOP + DRAG_MARGIN
+    viewport.width >= FLOATING_TERMINAL_TRIGGER_SIZE + DRAG_MARGIN * 2 &&
+    viewport.height >= FLOATING_TERMINAL_TRIGGER_SIZE + TITLEBAR_SAFE_TOP + DRAG_MARGIN
   )
 }
 
@@ -107,11 +113,11 @@ export function resolveFloatingTerminalTriggerCommittedPosition(
     left:
       position.anchorX === 'left'
         ? position.offsetX
-        : viewport.width - TRIGGER_SIZE - position.offsetX,
+        : viewport.width - FLOATING_TERMINAL_TRIGGER_SIZE - position.offsetX,
     top:
       position.anchorY === 'top'
         ? position.offsetY
-        : viewport.height - TRIGGER_SIZE - position.offsetY
+        : viewport.height - FLOATING_TERMINAL_TRIGGER_SIZE - position.offsetY
   }
 }
 
@@ -123,14 +129,20 @@ export function anchorFloatingTerminalTriggerPosition(
   }
   const viewport = getViewport()
   const anchorX: FloatingTerminalAnchorX =
-    position.left + TRIGGER_SIZE / 2 <= viewport.width / 2 ? 'left' : 'right'
+    position.left + FLOATING_TERMINAL_TRIGGER_SIZE / 2 <= viewport.width / 2 ? 'left' : 'right'
   const anchorY: FloatingTerminalAnchorY =
-    position.top + TRIGGER_SIZE / 2 <= viewport.height / 2 ? 'top' : 'bottom'
+    position.top + FLOATING_TERMINAL_TRIGGER_SIZE / 2 <= viewport.height / 2 ? 'top' : 'bottom'
   return {
     anchorX,
     anchorY,
-    offsetX: anchorX === 'left' ? position.left : viewport.width - position.left - TRIGGER_SIZE,
-    offsetY: anchorY === 'top' ? position.top : viewport.height - position.top - TRIGGER_SIZE
+    offsetX:
+      anchorX === 'left'
+        ? position.left
+        : viewport.width - position.left - FLOATING_TERMINAL_TRIGGER_SIZE,
+    offsetY:
+      anchorY === 'top'
+        ? position.top
+        : viewport.height - position.top - FLOATING_TERMINAL_TRIGGER_SIZE
   }
 }
 
@@ -187,10 +199,14 @@ export function parseFloatingTerminalTriggerPosition(
 }
 
 export function readPersistedFloatingTerminalTriggerPosition(): FloatingTerminalTriggerCommittedPosition | null {
+  return readPersistedFloatingControlPosition(FLOATING_TERMINAL_TRIGGER_POSITION_STORAGE_KEY)
+}
+
+export function readPersistedFloatingControlPosition(
+  storageKey: string
+): FloatingTerminalTriggerCommittedPosition | null {
   try {
-    return parseFloatingTerminalTriggerPosition(
-      getWindowStorage()?.getItem(FLOATING_TERMINAL_TRIGGER_POSITION_STORAGE_KEY) ?? null
-    )
+    return parseFloatingTerminalTriggerPosition(getWindowStorage()?.getItem(storageKey) ?? null)
   } catch {
     return null
   }
@@ -199,11 +215,15 @@ export function readPersistedFloatingTerminalTriggerPosition(): FloatingTerminal
 export function persistFloatingTerminalTriggerPosition(
   position: FloatingTerminalTriggerCommittedPosition
 ): void {
+  persistFloatingControlPosition(FLOATING_TERMINAL_TRIGGER_POSITION_STORAGE_KEY, position)
+}
+
+export function persistFloatingControlPosition(
+  storageKey: string,
+  position: FloatingTerminalTriggerCommittedPosition
+): void {
   try {
-    getWindowStorage()?.setItem(
-      FLOATING_TERMINAL_TRIGGER_POSITION_STORAGE_KEY,
-      JSON.stringify(position)
-    )
+    getWindowStorage()?.setItem(storageKey, JSON.stringify(position))
   } catch {
     // localStorage may be unavailable; the floating launcher remains session-local.
   }

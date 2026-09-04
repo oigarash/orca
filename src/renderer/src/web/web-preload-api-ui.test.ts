@@ -466,6 +466,7 @@ describe('web UI preload API', () => {
   const browserLocalUiSamples: Record<PairingLocalUiField, unknown> = {
     automationHostFilter: { kind: 'host', hostKey: 'browser-local-host-key' },
     hideWorkspacesFromOtherDevices: true,
+    inputMethodFloatingIndicatorVisible: true,
     inputMethodStatusVisible: true,
     manualRepoOrder: [{ hostId: 'runtime:web-env-1', repoId: 'repo-b' }],
     workspaceHostOrder: ['runtime:web-env-1', 'local']
@@ -473,6 +474,7 @@ describe('web UI preload API', () => {
   const hostUiSamples: Record<PairingLocalUiField, unknown> = {
     automationHostFilter: { kind: 'all' },
     hideWorkspacesFromOtherDevices: false,
+    inputMethodFloatingIndicatorVisible: false,
     inputMethodStatusVisible: false,
     manualRepoOrder: [{ hostId: 'local', repoId: 'repo-a' }],
     workspaceHostOrder: ['local', 'ssh:box']

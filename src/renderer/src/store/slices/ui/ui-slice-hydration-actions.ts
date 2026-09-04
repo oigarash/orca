@@ -195,6 +195,7 @@ export function createUiHydrationActions(set: UISliceSet, _get: UISliceGet): Par
           syncTaskStatusFromWorkspaceBoard: ui.syncTaskStatusFromWorkspaceBoard === true,
           statusBarItems: statusBarItemsWithGrok,
           statusBarVisible: ui.statusBarVisible ?? true,
+          inputMethodFloatingIndicatorVisible: ui.inputMethodFloatingIndicatorVisible === true,
           inputMethodStatusVisible: ui.inputMethodStatusVisible !== false,
           usagePercentageDisplay: normalizeUsagePercentageDisplay(ui.usagePercentageDisplay),
           statusBarUsageMode: normalizeStatusBarUsageMode(ui.statusBarUsageMode),

@@ -8,6 +8,7 @@ describe('pairing-local UI fields', () => {
     expect([...PAIRING_LOCAL_UI_FIELDS]).toEqual([
       'automationHostFilter',
       'hideWorkspacesFromOtherDevices',
+      'inputMethodFloatingIndicatorVisible',
       'inputMethodStatusVisible',
       'manualRepoOrder',
       'workspaceHostOrder'
@@ -17,6 +18,7 @@ describe('pairing-local UI fields', () => {
   it('omits every member and keeps everything else', () => {
     const state = {
       hideWorkspacesFromOtherDevices: true,
+      inputMethodFloatingIndicatorVisible: true,
       inputMethodStatusVisible: true,
       manualRepoOrder: [{ hostId: 'local' as const, repoId: 'repo-a' }],
       workspaceHostOrder: ['local' as const],

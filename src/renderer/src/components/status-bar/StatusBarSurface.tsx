@@ -72,12 +72,14 @@ export function StatusBarSurface({
     handleUsageMenuOpenChange,
     hasVisibleUsageMeters,
     iconOnly,
+    inputMethodFloatingIndicatorVisible,
     isEmptyUsageState,
     isRefreshing,
     petEnabled,
     rosterProviders,
     setMenuOpen,
     setMenuPoint,
+    setInputMethodFloatingIndicatorVisible,
     setStatusBarUsageMode,
     showEmptyUsageCta,
     showFloatingTerminalToggle,
@@ -245,7 +247,12 @@ export function StatusBarSurface({
       <div className="flex-1" />
 
       <div className="flex items-center gap-3">
-        {showInputMethodStatus ? <InputMethodStatusSegment /> : null}
+        {showInputMethodStatus ? (
+          <InputMethodStatusSegment
+            floatingIndicatorVisible={inputMethodFloatingIndicatorVisible}
+            onFloatingIndicatorVisibleChange={setInputMethodFloatingIndicatorVisible}
+          />
+        ) : null}
         {!isPairedWebClientWindow() ? <CaffeinateStatusSegment iconOnly={iconOnly} /> : null}
         <RemoteServerUpdateStatusSegment iconOnly={iconOnly} />
         <SkillUpdateStatusSegment iconOnly={iconOnly} />

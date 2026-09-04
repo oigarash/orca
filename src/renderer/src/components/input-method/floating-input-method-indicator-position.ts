@@ -1,0 +1,26 @@
+import {
+  FLOATING_TERMINAL_TRIGGER_DEFAULT_BOTTOM_GAP,
+  FLOATING_TERMINAL_TRIGGER_DEFAULT_RIGHT_GAP,
+  FLOATING_TERMINAL_TRIGGER_SIZE,
+  type FloatingTerminalAnchoredTriggerPosition
+} from '../floating-terminal/floating-terminal-trigger-position'
+
+export const FLOATING_INPUT_METHOD_INDICATOR_SIZE = FLOATING_TERMINAL_TRIGGER_SIZE
+export const FLOATING_INPUT_METHOD_INDICATOR_SIBLING_GAP = 12
+export const FLOATING_INPUT_METHOD_INDICATOR_RIGHT_GAP =
+  FLOATING_TERMINAL_TRIGGER_DEFAULT_RIGHT_GAP +
+  FLOATING_TERMINAL_TRIGGER_SIZE +
+  FLOATING_INPUT_METHOD_INDICATOR_SIBLING_GAP
+export const FLOATING_INPUT_METHOD_INDICATOR_BOTTOM_GAP =
+  FLOATING_TERMINAL_TRIGGER_DEFAULT_BOTTOM_GAP
+export const FLOATING_INPUT_METHOD_INDICATOR_POSITION_STORAGE_KEY =
+  'orca-floating-input-method-indicator-position-v1'
+
+export function getDefaultFloatingInputMethodIndicatorCommittedPosition(): FloatingTerminalAnchoredTriggerPosition {
+  return {
+    anchorX: 'right',
+    anchorY: 'bottom',
+    offsetX: FLOATING_INPUT_METHOD_INDICATOR_RIGHT_GAP,
+    offsetY: FLOATING_INPUT_METHOD_INDICATOR_BOTTOM_GAP
+  }
+}

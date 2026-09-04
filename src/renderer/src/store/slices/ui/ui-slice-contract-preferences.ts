@@ -82,6 +82,8 @@ export type UISlicePreferences = {
   toggleStatusBarItem: (item: StatusBarItem) => void
   statusBarVisible: boolean
   setStatusBarVisible: (v: boolean) => void
+  inputMethodFloatingIndicatorVisible: boolean
+  setInputMethodFloatingIndicatorVisible: (visible: boolean) => void
   inputMethodStatusVisible: boolean
   setInputMethodStatusVisible: (visible: boolean) => void
   usagePercentageDisplay: UsagePercentageDisplay

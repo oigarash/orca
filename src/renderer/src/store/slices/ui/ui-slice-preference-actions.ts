@@ -236,6 +236,11 @@ export function createUiPreferenceActions(set: UISliceSet, get: UISliceGet): Par
       window.api.ui.set({ statusBarVisible: v }).catch(console.error)
       set({ statusBarVisible: v })
     },
+    inputMethodFloatingIndicatorVisible: false,
+    setInputMethodFloatingIndicatorVisible: (visible) => {
+      window.api.ui.set({ inputMethodFloatingIndicatorVisible: visible }).catch(console.error)
+      set({ inputMethodFloatingIndicatorVisible: visible })
+    },
     inputMethodStatusVisible: true,
     setInputMethodStatusVisible: (visible) => {
       window.api.ui.set({ inputMethodStatusVisible: visible }).catch(console.error)

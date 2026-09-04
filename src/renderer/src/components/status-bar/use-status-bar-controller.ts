@@ -29,6 +29,12 @@ export function useStatusBarController(floatingTerminalOpen: boolean) {
   const usageMenuFocusHandoff = useStatusBarMenuFocusHandoff()
   const statusBarVisible = useAppStore((s) => s.statusBarVisible)
   const statusBarItems = useAppStore((s) => s.statusBarItems)
+  const inputMethodFloatingIndicatorVisible = useAppStore(
+    (s) => s.inputMethodFloatingIndicatorVisible
+  )
+  const setInputMethodFloatingIndicatorVisible = useAppStore(
+    (s) => s.setInputMethodFloatingIndicatorVisible
+  )
   const inputMethodStatusVisible = useAppStore((s) => s.inputMethodStatusVisible)
   const setInputMethodStatusVisible = useAppStore((s) => s.setInputMethodStatusVisible)
   const recordFeatureInteraction = useAppStore((s) => s.recordFeatureInteraction)
@@ -252,6 +258,7 @@ export function useStatusBarController(floatingTerminalOpen: boolean) {
     handleUsageMenuOpenChange,
     hasVisibleUsageMeters,
     iconOnly,
+    inputMethodFloatingIndicatorVisible,
     inputMethodStatusSupported,
     inputMethodStatusVisible,
     isEmptyUsageState,
@@ -263,6 +270,7 @@ export function useStatusBarController(floatingTerminalOpen: boolean) {
     rosterProviders,
     setMenuOpen,
     setMenuPoint,
+    setInputMethodFloatingIndicatorVisible,
     setInputMethodStatusVisible,
     setStatusBarUsageMode,
     showEmptyUsageCta,
