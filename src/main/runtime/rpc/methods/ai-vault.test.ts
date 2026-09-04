@@ -407,15 +407,14 @@ describe('aiVault.listSessions handler + shared cache', () => {
     expect(options.wslHomeDirs).toEqual([])
   })
 
-  it('forwards codex-home through the real OrcaRuntimeService construction path', async () => {
-    // Why: the dispatcher test above seeds the cache module directly, so it would
-    // still pass if OrcaRuntimeService stopped forwarding the codex-home source.
-    // Construct the real runtime to lock that cross-layer wiring in place.
+  it('keeps scanning disabled through the real OrcaRuntimeService construction path', async () => {
     const runtime = new OrcaRuntimeService(null, undefined, {
-      getAdditionalAiVaultCodexHomePaths: () => ['/ctor/codex/home']
+      getAdditionalCodexHomePaths: () => ['/ctor/codex/home']
     })
-    await runtime.listAiVaultSessions({})
-    const options = scanAiVaultSessionsInWorker.mock.calls[0]?.[0] as AiVaultScanOptions
-    expect(options.additionalCodexSessionsDirs).toContain('/ctor/codex/home/sessions')
+    await expect(runtime.listAiVaultSessions({})).resolves.toMatchObject({
+      sessions: [],
+      issues: []
+    })
+    expect(scanAiVaultSessionsInWorker).not.toHaveBeenCalled()
   })
 })
